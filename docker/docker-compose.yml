@@ -1,0 +1,35 @@
+services:
+  mysql:
+    image: mysql:latest
+    container_name: gongguri-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: 123123
+      MYSQL_DATABASE: gongguri
+      TZ: Asia/Seoul
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./mysql_data:/var/lib/mysql
+    networks:
+      - gongguri-network
+
+
+  mongodb:
+    image: mongo:latest
+    container_name: gongguri-mongodb
+    restart: unless-stopped
+    ports:
+      - "27018:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: 123123
+      MONGO_INITDB_DATABASE: chat
+    volumes:
+      - ./mongodb_data:/data/db
+    networks:
+      - gongguri-network
+
+networks:
+  gongguri-network:
+    driver: bridge
+    name: gongguri-network
