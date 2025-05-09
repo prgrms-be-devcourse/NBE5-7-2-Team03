@@ -15,7 +15,7 @@ public class Review {
     private Long reviewId;
 
     @Column(nullable = false)
-    private boolean like;
+    private boolean liked;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id", nullable = false)

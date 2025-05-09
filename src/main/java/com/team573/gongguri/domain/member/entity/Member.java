@@ -29,10 +29,10 @@ public class Member {
     private String password;
 
     @Column(nullable = false)
-    private int like;
+    private int likeCount;
 
     @Column(nullable = false)
-    private int dislike;
+    private int dislikeCount;
 
 
 }
