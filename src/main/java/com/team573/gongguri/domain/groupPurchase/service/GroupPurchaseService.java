@@ -11,7 +11,6 @@ import com.team573.gongguri.domain.member.entity.Member;
 import com.team573.gongguri.domain.member.entity.Univ;
 import com.team573.gongguri.global.exception.ErrorCode;
 import com.team573.gongguri.global.exception.ErrorException;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,9 +25,14 @@ public class GroupPurchaseService {
 
     @Transactional
     public GroupPurchaseResponseDto add(GroupPurchaseRequestDto dto, Member writer, ChatRoom chatRoom, Univ univ) {
-        GroupPurchase entity = GroupPurchaseMapper.toEntity(dto, writer, chatRoom, univ);
-        repository.save(entity);
-        return GroupPurchaseMapper.toDto(entity);
+        try {
+            GroupPurchase entity = GroupPurchaseMapper.toEntity(dto, writer, chatRoom, univ);
+            repository.save(entity);
+            return GroupPurchaseMapper.toDto(entity);
+        }catch (Exception e){
+            throw new ErrorException(ErrorCode.CREATE_FAILED_GROUP_PURCHASE);
+        }
+
     }
 
     @Transactional(readOnly = true)
@@ -47,16 +51,31 @@ public class GroupPurchaseService {
 
     @Transactional
     public GroupPurchaseResponseDto update(Long id, GroupPurchaseRequestDto dto) {
-        GroupPurchase entity = repository.findById(id)
-                .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_GROUP_PURCHASE));
-        entity.update(dto.title(), dto.content(), dto.price(), dto.maxParticipants(), dto.bank(), dto.account(), ProgressStatus.valueOf(dto.progressStatus().toUpperCase()));
-        return GroupPurchaseMapper.toDto(entity);
+        try {
+            GroupPurchase entity = repository.findById(id)
+                    .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_GROUP_PURCHASE));
+            entity.update(dto.title(),
+                    dto.content(),
+                    dto.price(),
+                    dto.maxParticipants(),
+                    dto.bank(),
+                    dto.account(),
+                    ProgressStatus.valueOf(dto.progressStatus().toUpperCase())
+            );
+            return GroupPurchaseMapper.toDto(entity);
+        }catch (Exception e){
+            throw new ErrorException(ErrorCode.UPDATE_FAILED_GROUP_PURCHASE);
+        }
     }
 
     @Transactional
     public void delete(Long id) {
-        GroupPurchase entity = repository.findById(id)
-                .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_GROUP_PURCHASE));
-        repository.delete(entity);
+        try {
+            GroupPurchase entity = repository.findById(id)
+                    .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_GROUP_PURCHASE));
+            repository.delete(entity);
+        } catch (Exception e) {
+            throw new ErrorException(ErrorCode.DELETE_FAILED_GROUP_PURCHASE);
+        }
     }
 }
