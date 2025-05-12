@@ -4,6 +4,7 @@ import com.team573.gongguri.domain.chat.entity.ChatRoom;
 import com.team573.gongguri.domain.member.entity.Member;
 import com.team573.gongguri.domain.member.entity.Univ;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -29,6 +30,7 @@ import lombok.NoArgsConstructor;
     @JoinColumn(name = "chat_room_id", nullable = false)
     private ChatRoom ChatRoom;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Enum<ProgressStatus> progressStatus;
 
@@ -49,4 +51,24 @@ import lombok.NoArgsConstructor;
 
     @Column(nullable = false)
     private String account;
+
+    @Builder
+    public GroupPurchase(Member member, Univ univ, ChatRoom chatRoom,
+                         ProgressStatus progressStatus, String title, String content,
+                         int price, int maxParticipants, String bank, String account) {
+        this.member = member;
+        this.univ = univ;
+        this.ChatRoom = chatRoom;
+        this.progressStatus = progressStatus;
+        this.title = title;
+        this.content = content;
+        this.price = price;
+        this.maxParticipants = maxParticipants;
+        this.bank = bank;
+        this.account = account;
+    }
+
+
+
+
 }

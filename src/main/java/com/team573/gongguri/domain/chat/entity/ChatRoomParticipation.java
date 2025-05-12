@@ -9,7 +9,8 @@ import lombok.NoArgsConstructor;
     @Entity
     @Getter
     @NoArgsConstructor
-    @Table(name = "chat_room_participation")
+    @Table(name =
+            "chat_room_participation")
     public class ChatRoomParticipation {
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
