@@ -48,4 +48,15 @@ public class GroupPurchaseController {
         return ResponseEntity.ok(service.getAll());
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<GroupPurchaseResponseDto> update(@PathVariable Long id, @RequestBody GroupPurchaseRequestDto dto) {
+
+        return ResponseEntity.ok(service.update(id, dto));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<GroupPurchaseResponseDto> delete(@PathVariable Long id) {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 }

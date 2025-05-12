@@ -53,9 +53,14 @@ import lombok.NoArgsConstructor;
     private String account;
 
     @Builder
-    public GroupPurchase(Member member, Univ univ, ChatRoom chatRoom,
-                         ProgressStatus progressStatus, String title, String content,
-                         int price, int maxParticipants, String bank, String account) {
+    public GroupPurchase(Member member, Univ univ,
+                         ChatRoom chatRoom,
+                         ProgressStatus progressStatus,
+                         String title, String content,
+                         int price, int maxParticipants,
+                         String bank, String account
+                        )
+    {
         this.member = member;
         this.univ = univ;
         this.ChatRoom = chatRoom;
@@ -69,12 +74,22 @@ import lombok.NoArgsConstructor;
     }
 
 
-    public void update(String title, String content, int price, int maxParticipants, String bank, String account) {
+    public void update(
+            String title,
+            String content,
+            int price,
+            int maxParticipants,
+            String bank,
+            String account,
+            ProgressStatus progressStatus
+            )
+    {
         this.title = title;
         this.content = content;
         this.price = price;
         this.maxParticipants = maxParticipants;
         this.bank = bank;
         this.account = account;
+        this.progressStatus = progressStatus;
     }
 }
