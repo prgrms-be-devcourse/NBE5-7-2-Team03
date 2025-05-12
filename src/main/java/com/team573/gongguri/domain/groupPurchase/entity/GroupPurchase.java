@@ -69,6 +69,12 @@ import lombok.NoArgsConstructor;
     }
 
 
-
-
+    public void update(String title, String content, int price, int maxParticipants, String bank, String account) {
+        this.title = title;
+        this.content = content;
+        this.price = price;
+        this.maxParticipants = maxParticipants;
+        this.bank = bank;
+        this.account = account;
+    }
 }
