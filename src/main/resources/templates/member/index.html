@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/css/member/index_style.css"/>
+    <title>홈</title>
+</head>
+
+<body>
+<div class="index-container">
+    <h1 class="index-title">환영합니다!</h1>
+    <p class="index-subtitle" th:if="${#authentication.principal.nickname}" th:text="'안녕하세요, ' + ${#authentication.principal.nickname} + '님!'"></p>
+
+    <div class="index-links">
+        <a href="/logout">로그아웃</a>
+    </div>
+</div>
+</body>
+</html>

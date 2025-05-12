@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="/css/member/join_style.css" />
+  <title>회원가입</title>
+</head>
+
+<body>
+<div class="join-content">
+  <form class="join-form" th:action="@{/join}" method="post">
+    <div class="join-title">회원가입</div>
+    <br>
+
+    <div class="error-message" th:if="${errorMessage}">
+      <p th:text="${errorMessage}"></p>
+    </div>
+
+    <div>
+      <label for="email">이메일</label>
+      <input class="join-control" type="email" name="email" id="email" required>
+    </div>
+
+    <div>
+      <label for="univName">학교 이름(인증api 도입시 이메일 입력 후 인증으로 값 처리 예정)</label>
+      <input class="join-control" type="text" name="univName" id="univName" required>
+    </div>
+
+    <div>
+      <label for="nickname">닉네임</label>
+      <input class="join-control" type="text" name="nickname" id="nickname" required>
+    </div>
+
+    <div>
+      <label for="password">비밀번호</label>
+      <input class="join-control" type="password" name="password" id="password" required>
+    </div>
+
+    <button class="join-button" type="submit">회원가입</button>
+
+    <button class="login-button" type="button" onclick="location.href='/login'">
+      로그인으로 돌아가기
+    </button>
+  </form>
+</div>
+</body>
+</html>
