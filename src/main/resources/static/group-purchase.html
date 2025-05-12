@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Group Purchase Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        input, button, textarea { margin: 5px 0; display: block; width: 100%; max-width: 500px; }
+        .response, #listBox { margin-top: 20px; white-space: pre-wrap; background: #f4f4f4; padding: 10px; }
+        table { border-collapse: collapse; width: 100%; max-width: 800px; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+<h1>Group Purchase 통합 테스트</h1>
+
+<h2>1. 공동구매 등록</h2>
+<form id="addForm">
+    <input type="text" id="title" placeholder="제목" required>
+    <textarea id="content" placeholder="내용" required></textarea>
+    <input type="number" id="price" placeholder="가격" required>
+    <input type="number" id="maxParticipants" placeholder="최대 인원" required>
+    <input type="text" id="bank" placeholder="은행명" required>
+    <input type="text" id="account" placeholder="계좌번호" required>
+    <input type="text" id="progressStatus" placeholder="상태 (예: OPEN)" required>
+    <input type="number" id="chatRoomId" placeholder="채팅방 ID" required>
+    <input type="number" id="univId" placeholder="대학교 ID" required>
+    <button type="submit">등록</button>
+</form>
+
+<h2>2. 전체 목록 조회</h2>
+<button onclick="fetchAll()">전체 조회</button>
+<div id="listBox"></div>
+
+<h2>3. 특정 ID 조회</h2>
+<input type="number" id="getId" placeholder="조회할 ID">
+<button onclick="fetchById()">조회</button>
+
+<h2>4. 수정</h2>
+<form id="updateForm">
+    <input type="number" id="updateId" placeholder="수정할 ID" required>
+    <input type="text" id="utitle" placeholder="제목" required>
+    <textarea id="ucontent" placeholder="내용" required></textarea>
+    <input type="number" id="uprice" placeholder="가격" required>
+    <input type="number" id="umaxParticipants" placeholder="최대 인원" required>
+    <input type="text" id="ubank" placeholder="은행명" required>
+    <input type="text" id="uaccount" placeholder="계좌번호" required>
+    <input type="text" id="uprogressStatus" placeholder="상태" required>
+    <input type="number" id="uchatRoomId" placeholder="채팅방 ID" required>
+    <input type="number" id="uunivId" placeholder="대학교 ID" required>
+    <button type="submit">수정</button>
+</form>
+
+<h2>5. 삭제</h2>
+<input type="number" id="deleteId" placeholder="삭제할 ID">
+<button onclick="deleteById()">삭제</button>
+
+<div class="response" id="response"></div>
+
+<script>
+    const apiUrl = '/api/group-purchases';
+    const responseBox = document.getElementById('response');
+    const listBox = document.getElementById('listBox');
+
+    document.getElementById('addForm').onsubmit = async function (e) {
+        e.preventDefault();
+        const dto = {
+            title: title.value,
+            content: content.value,
+            price: Number(price.value),
+            maxParticipants: Number(maxParticipants.value),
+            bank: bank.value,
+            account: account.value,
+            progressStatus: progressStatus.value,
+            chatRoomId: Number(chatRoomId.value),
+            univId: Number(univId.value)
+        };
+        const res = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dto)
+        });
+        responseBox.textContent = await res.text();
+        fetchAll(); // 등록 후 목록 자동 갱신
+    };
+
+    async function fetchAll() {
+        const res = await fetch(apiUrl);
+        const data = await res.json();
+
+        if (Array.isArray(data)) {
+            let html = '<table><tr><th>ID</th><th>제목</th><th>상태</th><th>등록일</th></tr>';
+            data.forEach(item => {
+                html += `<tr>
+                    <td>${item.id}</td>
+                    <td>${item.title}</td>
+                    <td>${item.progressStatus}</td>
+                    <td>${item.createdAt}</td>
+                </tr>`;
+            });
+            html += '</table>';
+            listBox.innerHTML = html;
+        } else {
+            listBox.textContent = '데이터 없음 또는 오류 발생';
+        }
+
+        responseBox.textContent = JSON.stringify(data, null, 2);
+    }
+
+    async function fetchById() {
+        const id = document.getElementById('getId').value;
+        const res = await fetch(`${apiUrl}/${id}`);
+        responseBox.textContent = await res.text();
+    }
+
+    document.getElementById('updateForm').onsubmit = async function (e) {
+        e.preventDefault();
+        const id = document.getElementById('updateId').value;
+        const dto = {
+            title: utitle.value,
+            content: ucontent.value,
+            price: Number(uprice.value),
+            maxParticipants: Number(umaxParticipants.value),
+            bank: ubank.value,
+            account: uaccount.value,
+            progressStatus: uprogressStatus.value,
+            chatRoomId: Number(uchatRoomId.value),
+            univId: Number(uunivId.value)
+        };
+        const res = await fetch(`${apiUrl}/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dto)
+        });
+        responseBox.textContent = await res.text();
+        fetchAll(); // 수정 후 목록 자동 갱신
+    };
+
+    async function deleteById() {
+        const id = document.getElementById('deleteId').value;
+        const res = await fetch(`${apiUrl}/${id}`, { method: 'DELETE' });
+        responseBox.textContent = res.ok ? `ID ${id} 삭제 완료` : `삭제 실패: ${res.status}`;
+        fetchAll(); // 삭제 후 목록 자동 갱신
+    }
+</script>
+</body>
+</html>

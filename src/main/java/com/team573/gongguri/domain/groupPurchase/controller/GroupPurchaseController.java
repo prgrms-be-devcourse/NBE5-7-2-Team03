@@ -1,11 +1,14 @@
 package com.team573.gongguri.domain.groupPurchase.controller;
 
 import com.team573.gongguri.domain.chat.entity.ChatRoom;
+import com.team573.gongguri.domain.chat.repository.ChatRoomRepository;
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseRequestDto;
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseResponseDto;
 import com.team573.gongguri.domain.groupPurchase.service.GroupPurchaseService;
 import com.team573.gongguri.domain.member.entity.Member;
 import com.team573.gongguri.domain.member.entity.Univ;
+import com.team573.gongguri.domain.member.repository.MemberRepository;
+import com.team573.gongguri.domain.member.repository.UnivRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,17 +16,25 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/group-purchase")
+@RequestMapping("/api/group-purchases")
 @RequiredArgsConstructor
 public class GroupPurchaseController {
     private final GroupPurchaseService service;
+    private final MemberRepository memberRepository;
+    private final UnivRepository univRepository;
+    private final ChatRoomRepository chatRoomRepository;
 
     @PostMapping
     public ResponseEntity<GroupPurchaseResponseDto> add(@RequestBody GroupPurchaseRequestDto dto) {
-        Member dummyMember = new Member();
-        Univ dummyUniv = new Univ();
-        ChatRoom dummyChatRoom = new ChatRoom();
-        return ResponseEntity.ok(service.add(dto, dummyMember, dummyChatRoom, dummyUniv));
+        Member member = memberRepository.findById(1L)  // 로그인 연동 전 테스트용 고정 ID
+                .orElseThrow(() -> new RuntimeException("Member not found"));
+
+        Univ univ = univRepository.findById(dto.univId())
+                .orElseThrow(() -> new RuntimeException("Univ not found"));
+
+        ChatRoom chatRoom = chatRoomRepository.findById(dto.chatRoomId())
+                .orElseThrow(() -> new RuntimeException("ChatRoom not found"));
+        return ResponseEntity.ok(service.add(dto, member, chatRoom, univ));
 
     }
 

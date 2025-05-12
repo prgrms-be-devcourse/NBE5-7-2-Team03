@@ -32,7 +32,7 @@ import lombok.NoArgsConstructor;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Enum<ProgressStatus> progressStatus;
+    private ProgressStatus progressStatus;
 
     @Column(nullable = false)
     private String title;
