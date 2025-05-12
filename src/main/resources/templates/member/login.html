@@ -1,47 +1,44 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="/css/member/login_style.css"/>
+    <link rel="stylesheet" href="/css/member/member_common.css" />
+    <link rel="stylesheet" href="/css/styles.css" />
     <title>로그인</title>
 </head>
-
 <body>
-<div class="login-content">
-    <form class="login-form" th:action="@{/login}" method="post">
+<div th:replace="~{fragments/layout :: mobileContainer}">
+    <div th:fragment="content">
+        <div th:replace="~{fragments/topbar :: topBar('로그인')}"></div>
 
-        <!-- 회원가입 성공 메시지 -->
-        <script th:if="${successMessage}" th:inline="javascript">
-            alert([[${successMessage}]]);
-        </script>
+        <main class="container">
+            <form class="member-form" th:action="@{/login}" method="post">
 
-        <script th:inline="javascript">
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('error') === 'unauthorized') {
-                alert("로그인이 필요한 서비스입니다.");
-            } else if (urlParams.get('error')) {
-                alert("아이디 또는 비밀번호가 올바르지 않습니다.");
-            }
-        </script>
+                <script th:if="${successMessage}" th:inline="javascript">
+                    alert([[${successMessage}]]);
+                </script>
 
-        <div class="login-title">로그인</div>
-        <br>
+                <script th:inline="javascript">
+                    const urlParams = new URLSearchParams(window.location.search);
+                    if (urlParams.get('error') === 'unauthorized') {
+                        alert("로그인이 필요한 서비스입니다.");
+                    } else if (urlParams.get('error')) {
+                        alert("아이디 또는 비밀번호가 올바르지 않습니다.");
+                    }
+                </script>
 
-        <div>
-            <label for="email">이메일</label>
-            <input class="login-control" type="email" name="email" id="email" required>
-        </div>
+                <label for="email">이메일</label>
+                <input class="member-control" type="email" name="email" id="email" required>
 
-        <div>
-            <label for="password">비밀번호</label>
-            <input class="login-control" type="password" name="password" id="password" required>
-        </div>
+                <label for="password">비밀번호</label>
+                <input class="member-control" type="password" name="password" id="password" required>
+                <button class="primary-button" type="submit">로그인</button>
+                <button class="secondary-button" type="button" th:onclick="|location.href='@{/join}'|">회원가입</button>
+            </form>
+        </main>
 
-        <button class="login-button" type="submit">로그인</button>
-        <br>
-
-        <button class="join-button" type="button" th:onclick="|location.href='@{/join}'|">회원가입</button>
-    </form>
+        <div th:replace="~{fragments/bottombar :: bottomNav('none')}"></div>
+    </div>
 </div>
 </body>
 </html>
