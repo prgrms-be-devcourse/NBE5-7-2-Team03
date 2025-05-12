@@ -14,4 +14,5 @@ public class JoinRequestDto {
     private String nickname;
     private String password;
     private String univName;
+    private boolean verified;
 }

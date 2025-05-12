@@ -17,14 +17,25 @@
     </div>
 
     <div>
-      <label for="email">이메일</label>
+      <label for="email">학교 이메일</label>
       <input class="join-control" type="email" name="email" id="email" required>
     </div>
 
-    <div>
-      <label for="univName">학교 이름(인증api 도입시 이메일 입력 후 인증으로 값 처리 예정)</label>
-      <input class="join-control" type="text" name="univName" id="univName" required>
+    <div class="row">
+      <label for="univName">학교 이름</label>
+      <input type="text" id="univName" name="univName" placeholder="학교 이름" required />
+      <button type="button" id="send-code-btn" class="inline-button">인증번호 발송</button>
     </div>
+
+    <div class="row">
+      <label for="verification-code">인증 코드</label>
+      <input type="text" id="verification-code" name="verificationCode" placeholder="이메일로 받은 인증 코드" required />
+      <button type="button" id="verify-code-btn" class="inline-button">인증 확인</button>
+    </div>
+
+    <div id="verification-result" style="color: green;"></div>
+
+    <input type="hidden" name="verified" id="verified" th:value="${verified}" />
 
     <div>
       <label for="nickname">닉네임</label>
@@ -43,5 +54,8 @@
     </button>
   </form>
 </div>
+
+<script src="/js/verify.js"></script>
+
 </body>
 </html>
