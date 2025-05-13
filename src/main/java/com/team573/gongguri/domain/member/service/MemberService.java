@@ -3,6 +3,7 @@ package com.team573.gongguri.domain.member.service;
 import com.team573.gongguri.domain.member.dto.JoinRequestDto;
 import com.team573.gongguri.domain.member.entity.Member;
 import com.team573.gongguri.domain.member.entity.Univ;
+import com.team573.gongguri.domain.member.mapper.MemberMapper;
 import com.team573.gongguri.domain.member.repository.MemberRepository;
 import com.team573.gongguri.domain.member.repository.UnivRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,21 +18,14 @@ public class MemberService {
     private final PasswordEncoder passwordEncoder;
 
     public void join(JoinRequestDto joinRequestDto) {
-        Univ univ = univRepository.findByUnivName(joinRequestDto.getUnivName()).orElse(null);
+        Univ univ = univRepository.findByUnivName(joinRequestDto.univName()).orElse(null);
         if (univ == null) {
-            univ = univRepository.save(new Univ(joinRequestDto.getUnivName()));
+            univ = univRepository.save(new Univ(joinRequestDto.univName()));
         }
 
-        String encodedPassword = passwordEncoder.encode(joinRequestDto.getPassword());
+        String encodedPassword = passwordEncoder.encode(joinRequestDto.password());
 
-        Member member = Member.builder()
-                .email(joinRequestDto.getEmail())
-                .nickname(joinRequestDto.getNickname())
-                .password(encodedPassword)
-                .likeCount(0)
-                .dislikeCount(0)
-                .univ(univ)
-                .build();
+        Member member = MemberMapper.toEntity(joinRequestDto, encodedPassword, univ);
 
         memberRepository.save(member);
     }

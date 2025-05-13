@@ -33,7 +33,7 @@ public class MemberController {
 
     @PostMapping("/join")
     public String join(@ModelAttribute JoinRequestDto joinRequest, RedirectAttributes redirectAttributes) {
-        if (!joinRequest.isVerified()) {
+        if (!joinRequest.verified()) {
             redirectAttributes.addFlashAttribute("error", "이메일 인증이 완료되지 않았습니다.");
             return "redirect:/join";  // 인증이 되지 않으면 다시 인증 페이지로 이동
         }
