@@ -1,14 +1,14 @@
 package com.team573.gongguri.domain.member.entity;
 
-import com.team573.gongguri.domain.groupPurchase.entity.GroupPurchase;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 
 @Entity
 @Getter
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "member")
 public class Member {
     @Id
