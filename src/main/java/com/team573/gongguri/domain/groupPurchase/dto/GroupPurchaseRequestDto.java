@@ -7,7 +7,5 @@ public record GroupPurchaseRequestDto(
         int maxParticipants,
         String bank,
         String account,
-        String progressStatus,
-        Long chatRoomId,
-        Long univId
+        String progressStatus
 ) {}

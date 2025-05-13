@@ -20,7 +20,7 @@ public class GroupPurchaseMapper {
                .maxParticipants(dto.maxParticipants())
                .bank(dto.bank())
                .account(dto.account())
-               .progressStatus(ProgressStatus.valueOf(dto.progressStatus().toUpperCase()))
+               .progressStatus(ProgressStatus.RECRUITING)
                .build();
     }
     public static GroupPurchaseResponseDto toDto(GroupPurchase entity) {

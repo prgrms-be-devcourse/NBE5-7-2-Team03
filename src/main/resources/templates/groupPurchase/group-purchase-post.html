@@ -107,10 +107,11 @@
 
         const requestData = {
             title: document.getElementById("title").value,
-            price: parseInt(document.getElementById("price").value),
-            account: document.getElementById("account").value,
             content: document.getElementById("content").value,
-            peopleCount: parseInt(document.getElementById("peopleCount").value)
+            price: parseInt(document.getElementById("price").value),
+            maxParticipants: parseInt(document.getElementById("peopleCount").value),
+            bank: document.getElementById("bank").value,
+            account: document.getElementById("account").value
         };
 
         try {

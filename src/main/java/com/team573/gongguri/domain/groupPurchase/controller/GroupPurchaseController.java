@@ -31,10 +31,9 @@ public class GroupPurchaseController {
         Member member = memberRepository.findById(1L)  // 로그인 연동 전 테스트용 고정 ID
                 .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_MEMBER));
 
-        Univ univ = univRepository.findById(dto.univId())
-                .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_UNIV));
+        Univ univ = member.getUniv();
 
-        ChatRoom chatRoom = chatRoomRepository.findById(dto.chatRoomId())
+        ChatRoom chatRoom = chatRoomRepository.findById(1L)
                 .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_CHATROOM));
 
         return ResponseEntity.ok(service.add(dto, member, chatRoom, univ));
