@@ -5,8 +5,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 public class GroupPurchaseViewController {
-    @GetMapping("/test/group-purchase")
+    @GetMapping("/group-purchase")
     public String testView() {
         return "groupPurchase/group-purchase";
     }
+    //groupPurchase/group-purchase
 }

@@ -1,143 +1,99 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Group Purchase Test</title>
 
+    <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" th:href="@{/css/groupPurchase/group-purchase_style.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 </head>
 <body>
-<h1>Group Purchase 통합 테스트</h1>
 
-<h2>1. 공동구매 등록</h2>
-<form id="addForm">
-    <input type="text" id="title" placeholder="제목" required>
-    <textarea id="content" placeholder="내용" required></textarea>
-    <input type="number" id="price" placeholder="가격" required>
-    <input type="number" id="maxParticipants" placeholder="최대 인원" required>
-    <input type="text" id="bank" placeholder="은행명" required>
-    <input type="text" id="account" placeholder="계좌번호" required>
-    <input type="text" id="progressStatus" placeholder="상태 (예: OPEN)" required>
-    <input type="number" id="chatRoomId" placeholder="채팅방 ID" required>
-    <input type="number" id="univId" placeholder="대학교 ID" required>
-    <button type="submit">등록</button>
-</form>
+<!-- ✅ layout.html 구조 유지 -->
+<div th:replace="~{fragments/layout :: mobileContainer}">
+    <div th:fragment="content">
 
-<h2>2. 전체 목록 조회</h2>
-<button onclick="fetchAll()">전체 조회</button>
-<div id="listBox"></div>
+        <!-- ✅ Top Bar 유지 -->
+        <div th:replace="~{fragments/topbar :: topBar('GroupPurchase')}"></div>
 
-<h2>3. 특정 ID 조회</h2>
-<input type="number" id="getId" placeholder="조회할 ID">
-<button onclick="fetchById()">조회</button>
+        <main class="container" style="position: relative;">
 
-<h2>4. 수정</h2>
-<form id="updateForm">
-    <input type="number" id="updateId" placeholder="수정할 ID" required>
-    <input type="text" id="utitle" placeholder="제목" required>
-    <textarea id="ucontent" placeholder="내용" required></textarea>
-    <input type="number" id="uprice" placeholder="가격" required>
-    <input type="number" id="umaxParticipants" placeholder="최대 인원" required>
-    <input type="text" id="ubank" placeholder="은행명" required>
-    <input type="text" id="uaccount" placeholder="계좌번호" required>
-    <input type="text" id="uprogressStatus" placeholder="상태" required>
-    <input type="number" id="uchatRoomId" placeholder="채팅방 ID" required>
-    <input type="number" id="uunivId" placeholder="대학교 ID" required>
-    <button type="submit">수정</button>
-</form>
+            <!-- 중앙정렬 학교명 -->
+            <div class="top-search-filter">
+                <span class="school-name">3소대학교</span>
+            </div>
 
-<h2>5. 삭제</h2>
-<input type="number" id="deleteId" placeholder="삭제할 ID">
-<button onclick="deleteById()">삭제</button>
+            <!-- 상태 필터 -->
+            <div class="status-filter">
+                <button class="filter-btn selected" onclick="filterStatus('ALL')">전체</button>
+                <button class="filter-btn" onclick="filterStatus('OPEN')">진행중</button>
+                <button class="filter-btn" onclick="filterStatus('DONE')">완료</button>
+            </div>
 
-<div class="response" id="response"></div>
+            <!-- 카드 리스트 -->
+            <div id="groupPurchaseList" class="purchase-list"></div>
+
+        </main>
+
+        <!-- ✅ Bottom Bar 유지 -->
+        <div th:replace="~{fragments/bottombar :: bottomNav('groupPurchase')}"></div>
+    </div>
+</div>
+
+<!-- ➕ 추가 버튼 -->
+<button class="add-btn" onclick="goToAdd()">＋</button>
 
 <script>
     const apiUrl = '/api/group-purchases';
-    const responseBox = document.getElementById('response');
-    const listBox = document.getElementById('listBox');
 
-    document.getElementById('addForm').onsubmit = async function (e) {
-        e.preventDefault();
-        const dto = {
-            title: title.value,
-            content: content.value,
-            price: Number(price.value),
-            maxParticipants: Number(maxParticipants.value),
-            bank: bank.value,
-            account: account.value,
-            progressStatus: progressStatus.value,
-            chatRoomId: Number(chatRoomId.value),
-            univId: Number(univId.value)
-        };
-        const res = await fetch(apiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(dto)
-        });
-        responseBox.textContent = await res.text();
-        fetchAll(); // 등록 후 목록 자동 갱신
-    };
+    function renderCard(item) {
+        const statusClass = item.progressStatus === 'OPEN' ? 'status-open' : 'status-done';
 
-    async function fetchAll() {
+        return `
+      <a href="/group-purchase/${item.id}" class="purchase-card">
+        <img src="${item.imageUrl || 'https://via.placeholder.com/110x90'}" alt="item">
+        <div class="purchase-info">
+          <div class="purchase-title">${item.title}</div>
+          <div class="purchase-meta">${item.createdAt} - ${item.category || '기타'}</div>
+          <div class="purchase-footer">
+            <span>👥 ${item.currentParticipants || 0}/${item.maxParticipants}</span>
+            <span class="status-badge ${statusClass}">${item.progressStatus}</span>
+            <span><strong>₩${item.price.toLocaleString()}</strong></span>
+          </div>
+        </div>
+      </a>`;
+    }
+
+    async function fetchAndRender(status = 'ALL') {
         const res = await fetch(apiUrl);
         const data = await res.json();
+        const list = document.getElementById('groupPurchaseList');
 
-        if (Array.isArray(data)) {
-            let html = '<table><tr><th>ID</th><th>제목</th><th>상태</th><th>등록일</th></tr>';
-            data.forEach(item => {
-                html += `<tr>
-                    <td>${item.id}</td>
-                    <td>${item.title}</td>
-                    <td>${item.progressStatus}</td>
-                    <td>${item.createdAt}</td>
-                </tr>`;
-            });
-            html += '</table>';
-            listBox.innerHTML = html;
-        } else {
-            listBox.textContent = '데이터 없음 또는 오류 발생';
+        let filtered = data;
+        if (status !== 'ALL') {
+            filtered = data.filter(item => item.progressStatus === status);
         }
 
-        responseBox.textContent = JSON.stringify(data, null, 2);
+        list.innerHTML = filtered.map(renderCard).join('');
     }
 
-    async function fetchById() {
-        const id = document.getElementById('getId').value;
-        const res = await fetch(`${apiUrl}/${id}`);
-        responseBox.textContent = await res.text();
+    function filterStatus(status) {
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('selected'));
+        if (status === 'ALL') document.querySelectorAll('.filter-btn')[0].classList.add('selected');
+        if (status === 'OPEN') document.querySelectorAll('.filter-btn')[1].classList.add('selected');
+        if (status === 'DONE') document.querySelectorAll('.filter-btn')[2].classList.add('selected');
+        fetchAndRender(status);
     }
 
-    document.getElementById('updateForm').onsubmit = async function (e) {
-        e.preventDefault();
-        const id = document.getElementById('updateId').value;
-        const dto = {
-            title: utitle.value,
-            content: ucontent.value,
-            price: Number(uprice.value),
-            maxParticipants: Number(umaxParticipants.value),
-            bank: ubank.value,
-            account: uaccount.value,
-            progressStatus: uprogressStatus.value,
-            chatRoomId: Number(uchatRoomId.value),
-            univId: Number(uunivId.value)
-        };
-        const res = await fetch(`${apiUrl}/${id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(dto)
-        });
-        responseBox.textContent = await res.text();
-        fetchAll(); // 수정 후 목록 자동 갱신
-    };
-
-    async function deleteById() {
-        const id = document.getElementById('deleteId').value;
-        const res = await fetch(`${apiUrl}/${id}`, { method: 'DELETE' });
-        responseBox.textContent = res.ok ? `ID ${id} 삭제 완료` : `삭제 실패: ${res.status}`;
-        fetchAll(); // 삭제 후 목록 자동 갱신
+    function goToAdd() {
+        window.location.href = "/group-purchase/add";
     }
+
+    fetchAndRender();
 </script>
+
 </body>
 </html>
