@@ -35,7 +35,7 @@ public class GroupPurchaseController {
                 .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_UNIV));
 
         ChatRoom chatRoom = chatRoomRepository.findById(dto.chatRoomId())
-                .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_UNIV));
+                .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_CHATROOM));
 
         return ResponseEntity.ok(service.add(dto, member, chatRoom, univ));
 
