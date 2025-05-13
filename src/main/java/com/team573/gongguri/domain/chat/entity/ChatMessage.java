@@ -16,14 +16,17 @@ public class ChatMessage extends BaseEntity {
     @Id
     private ObjectId id;
 
+    private String nickname;
+
     private String content;
 
     @Field("room_id")
     private Long roomId;
 
     @Builder
-    public ChatMessage(String content, Long roomId) {
+    public ChatMessage(String content, Long roomId, String nickname) {
         this.content = content;
         this.roomId = roomId;
+        this.nickname = nickname;
     }
 }
