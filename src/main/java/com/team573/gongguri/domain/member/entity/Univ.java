@@ -22,6 +22,7 @@ public class Univ extends BaseEntity {
     @Column(nullable = false)
     private String univName;
 
-    @Column(nullable = false)
-    private String univEmail;
+    public Univ(String univName) {
+        this.univName = univName;
+    }
 }

@@ -12,11 +12,14 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.*;
 
 
 @Entity
 @Getter
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "member")
 public class Member extends BaseEntity {
     @Id
