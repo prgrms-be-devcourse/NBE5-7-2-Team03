@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -15,6 +16,7 @@ import org.springframework.web.method.HandlerMethod;
 public class ExceptionAdvice {
 
     @ExceptionHandler(ErrorException.class)
+    @MessageExceptionHandler(ErrorException.class)
     public Object handleErrorException(
         ErrorException e,
         Model model,
@@ -34,6 +36,7 @@ public class ExceptionAdvice {
                 case FORBIDDEN -> HttpStatus.FORBIDDEN;
                 case NOT_FOUND -> HttpStatus.NOT_FOUND;
                 case CONFLICT -> HttpStatus.CONFLICT;
+                case UNAUTHORIZED -> HttpStatus.UNAUTHORIZED;
             };
 
             return ResponseEntity.status(httpStatus)
