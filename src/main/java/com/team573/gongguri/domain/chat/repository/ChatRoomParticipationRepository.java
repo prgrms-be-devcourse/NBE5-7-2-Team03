@@ -9,4 +9,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ChatRoomParticipationRepository extends JpaRepository<ChatRoomParticipation, Long> {
     Boolean existsByChatRoomAndMember(ChatRoom chatRoom, Member member);
+    void deleteByChatRoomAndMember(ChatRoom chatRoom, Member member);
 }
