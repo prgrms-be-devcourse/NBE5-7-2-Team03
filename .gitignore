@@ -38,3 +38,6 @@ out/
 
 ### volumns
 docker/*_data
+
+# .gitignore
+/uploads/

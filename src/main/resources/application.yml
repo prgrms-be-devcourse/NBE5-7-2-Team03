@@ -26,6 +26,9 @@ spring:
 
   mvc:
     static-path-pattern: /**
-  web:
-    resources:
-      static-locations: classpath:/static/, file:src/main/resources/static/uploads/
+  spring:
+    web:
+      resources:
+        static-locations: file:${user.home}/gongguri-uploads/, classpath:/static/
+  file:
+    upload-dir: C:/gongguri-uploads/

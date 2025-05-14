@@ -18,7 +18,6 @@ import java.util.UUID;
 @Slf4j
 public class ImageUploadController {
 
-    // ✅ Windows에서도 안전한 절대 경로 (유저 홈 디렉토리 하위)
     private static final String UPLOAD_DIR = System.getProperty("user.home") + "/gongguri-uploads";
 
     @PostMapping(consumes = "multipart/form-data")
@@ -46,14 +45,14 @@ public class ImageUploadController {
 
             // 접근 경로는 uploads/filename 으로 가정 (리버스 프록시나 NGINX에서 매핑 가능)
             String imageUrl = "/uploads/" + filename;
-            log.info("✅ 이미지 저장 완료: {}", dest.getAbsolutePath());
+            log.info("이미지 저장 완료: {}", dest.getAbsolutePath());
 
             Map<String, String> response = new HashMap<>();
             response.put("imageUrl", imageUrl);
             return ResponseEntity.ok(response);
 
         } catch (IOException e) {
-            log.error("🚨 이미지 저장 중 오류 발생", e);
+            log.error("이미지 저장 중 오류 발생", e);
             return ResponseEntity.internalServerError().body(Map.of("error", "파일 저장 중 오류 발생"));
         }
     }
