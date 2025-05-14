@@ -22,6 +22,7 @@ public class ChatMapper {
         return ChatMessageResponseDto.builder()
             .content(chatMessage.getContent())
             .nickname(chatMessage.getNickname())
+            .createdAt(chatMessage.getCreatedAt())
             .build();
     }
 
