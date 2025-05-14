@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -16,7 +15,6 @@ import org.springframework.web.method.HandlerMethod;
 public class ExceptionAdvice {
 
     @ExceptionHandler(ErrorException.class)
-    @MessageExceptionHandler(ErrorException.class)
     public Object handleErrorException(
         ErrorException e,
         Model model,
