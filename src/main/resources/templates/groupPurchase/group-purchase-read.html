@@ -80,6 +80,39 @@
             alert("상세 정보를 불러오지 못했습니다.");
         }
     });
+
+    document.addEventListener("DOMContentLoaded", async () => {
+        const groupId = [[${groupId}]];
+
+        try {
+            const res = await fetch(`/api/group-purchases/${groupId}`);
+            const data = await res.json();
+
+            const joinButton = document.querySelector(".join-button");
+            const memberCount = document.getElementById("memberCount");
+
+            // 참여자 수
+            memberCount.innerText = `${data.currentParticipants}/${data.maxParticipants}`;
+
+            if (data.isParticipated) {
+                // 작성자 or 이미 참여자
+                joinButton.disabled = true;
+                joinButton.innerText = "참여중";
+                joinButton.style.backgroundColor = "#ccc";
+                joinButton.style.cursor = "not-allowed";
+            } else {
+                // 참여 가능
+                joinButton.disabled = false;
+                joinButton.innerText = "참가하기";
+                joinButton.style.backgroundColor = "#007bff";
+                joinButton.style.cursor = "pointer";
+            }
+
+        } catch (err) {
+            alert("상세 정보를 불러오지 못했습니다.");
+        }
+    });
+
 </script>
 </body>
 </html>

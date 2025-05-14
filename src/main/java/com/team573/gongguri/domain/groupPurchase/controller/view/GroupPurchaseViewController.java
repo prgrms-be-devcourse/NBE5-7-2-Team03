@@ -17,7 +17,6 @@ public class GroupPurchaseViewController {
         return "groupPurchase/group-purchase";
 
     }
-
     // 공동구매 게시글 작성 페이지
     @GetMapping("/post")
     public String showPostPage() {

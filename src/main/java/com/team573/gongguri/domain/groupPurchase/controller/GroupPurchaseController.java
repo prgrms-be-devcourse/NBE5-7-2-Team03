@@ -50,8 +50,8 @@ public class GroupPurchaseController {
     }
 
     @GetMapping
-    public ResponseEntity<List<GroupPurchaseResponseDto>> getAll() {
-        return ResponseEntity.ok(service.getAll());
+    public ResponseEntity<List<GroupPurchaseResponseDto>> getAll(Member member) {
+        return ResponseEntity.ok(service.getAll(member));
     }
 
     @PutMapping("/{id}")

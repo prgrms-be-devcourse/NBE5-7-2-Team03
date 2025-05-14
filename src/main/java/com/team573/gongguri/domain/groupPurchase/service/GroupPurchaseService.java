@@ -4,8 +4,11 @@ import com.team573.gongguri.domain.chat.entity.ChatRoom;
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseRequestDto;
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseResponseDto;
 import com.team573.gongguri.domain.groupPurchase.entity.GroupPurchase;
+import com.team573.gongguri.domain.groupPurchase.entity.GroupPurchaseParticipant;
+import com.team573.gongguri.domain.groupPurchase.entity.ParticipationStatus;
 import com.team573.gongguri.domain.groupPurchase.entity.ProgressStatus;
 import com.team573.gongguri.domain.groupPurchase.mapper.GroupPurchaseMapper;
+import com.team573.gongguri.domain.groupPurchase.repository.GroupPurchaseParticipantRepository;
 import com.team573.gongguri.domain.groupPurchase.repository.GroupPurchaseRepository;
 import com.team573.gongguri.domain.member.entity.Member;
 import com.team573.gongguri.domain.member.entity.Univ;
@@ -22,15 +25,26 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class GroupPurchaseService {
     private final GroupPurchaseRepository repository;
+    private final GroupPurchaseParticipantRepository participantRepository;
 
     @Transactional
     public GroupPurchaseResponseDto add(GroupPurchaseRequestDto dto, Member writer, ChatRoom chatRoom, Univ univ) {
         try {
             GroupPurchase entity = GroupPurchaseMapper.toEntity(dto, writer, chatRoom, univ);
             entity.setImageUrl(dto.imageUrl()); // 이미지 URL 직접 설정
-
             repository.save(entity);
-            return GroupPurchaseMapper.toDto(entity);
+
+            GroupPurchaseParticipant participant = GroupPurchaseParticipant.builder()
+                    .groupPurchase(entity)
+                    .member(writer)
+                    .participationStatus(ParticipationStatus.JOINED)
+                    .build();
+            participantRepository.save(participant);
+
+            int currentParticipants = participantRepository.countByGroupPurchase_GroupId(entity.getGroupId());
+            boolean isParticipated = true; // 어차피 작성자이므로 true로 고정해도 무방
+
+            return GroupPurchaseMapper.toDto(entity, currentParticipants, isParticipated);
         } catch (Exception e) {
             throw new ErrorException(ErrorCode.CREATE_FAILED_GROUP_PURCHASE);
         }
@@ -40,13 +54,19 @@ public class GroupPurchaseService {
     public GroupPurchaseResponseDto get(Long id) {
         GroupPurchase entity = repository.findById(id)
                 .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_GROUP_PURCHASE));
-        return GroupPurchaseMapper.toDto(entity);
+        int currentParticipants = participantRepository.countByGroupPurchase_GroupId(id);
+        boolean isParticipated = participantRepository.existsByGroupPurchase_GroupIdAndMember_MemberId(id, 3L); // 로그인 대체
+        return GroupPurchaseMapper.toDto(entity, currentParticipants, isParticipated);
     }
 
     @Transactional(readOnly = true)
-    public List<GroupPurchaseResponseDto> getAll() {
+    public List<GroupPurchaseResponseDto> getAll(Member member) {
         return repository.findAll().stream()
-                .map(GroupPurchaseMapper::toDto)
+                .map(entity -> {
+                    int currentParticipants = participantRepository.countByGroupPurchase_GroupId(entity.getGroupId());
+                    boolean isParticipated = participantRepository.existsByGroupPurchase_GroupIdAndMember_MemberId(entity.getGroupId(), member.getMemberId());
+                    return GroupPurchaseMapper.toDto(entity, currentParticipants, isParticipated);
+                })
                 .collect(Collectors.toList());
     }
 

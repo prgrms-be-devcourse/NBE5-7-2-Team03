@@ -3,6 +3,7 @@ package com.team573.gongguri.domain.groupPurchase.entity;
 import com.team573.gongguri.domain.chat.entity.ChatRoom;
 import com.team573.gongguri.domain.member.entity.Member;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -24,6 +25,14 @@ import lombok.NoArgsConstructor;
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Enum<ParticipationStatus> participationStatus;
+    private ParticipationStatus participationStatus;
+
+    @Builder
+    public GroupPurchaseParticipant(GroupPurchase groupPurchase, Member member, ParticipationStatus participationStatus) {
+        this.groupPurchase = groupPurchase;
+        this.member = member;
+        this.participationStatus = participationStatus;
+    }
 }
