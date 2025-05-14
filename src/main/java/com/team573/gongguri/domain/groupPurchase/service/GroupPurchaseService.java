@@ -15,6 +15,7 @@ import com.team573.gongguri.domain.member.entity.Univ;
 import com.team573.gongguri.global.exception.ErrorCode;
 import com.team573.gongguri.global.exception.ErrorException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class GroupPurchaseService {
     private final GroupPurchaseRepository repository;
@@ -103,4 +105,38 @@ public class GroupPurchaseService {
             throw new ErrorException(ErrorCode.DELETE_FAILED_GROUP_PURCHASE);
         }
     }
+
+    @Transactional
+    public void join(Long groupId, Member member) {
+        try {
+            if (member == null) {
+                log.error("[JOIN ERROR] Member is null");
+                throw new ErrorException(ErrorCode.NOT_FOUND_MEMBER);
+            }
+
+            log.info("[JOIN] START: groupId={}, memberId={}", groupId, member.getMemberId());
+
+            GroupPurchase groupPurchase = repository.findById(groupId)
+                    .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_GROUP_PURCHASE));
+
+            boolean alreadyJoined = participantRepository.existsByGroupPurchase_GroupIdAndMember_MemberId(groupId, member.getMemberId());
+            if (alreadyJoined) {
+                throw new ErrorException(ErrorCode.ALREADY_JOINED);
+            }
+
+            GroupPurchaseParticipant participant = GroupPurchaseParticipant.builder()
+                    .groupPurchase(groupPurchase)
+                    .member(member)
+                    .participationStatus(ParticipationStatus.JOINED)
+                    .build();
+
+            participantRepository.save(participant);
+
+            log.info("[JOIN] groupId: {}, memberId: {}", groupId, member.getMemberId());
+        } catch (Exception e) {
+            log.error("[JOIN ERROR] message: {}", e.getMessage(), e);
+            throw new ErrorException(ErrorCode.JOIN_FAILED);    // 신규 에러코드가 없다면 하나 추가
+        }
+    }
+
 }

@@ -29,6 +29,7 @@ public class GroupPurchaseController {
     private final MemberRepository memberRepository;
     private final UnivRepository univRepository;
     private final ChatRoomRepository chatRoomRepository;
+    private final GroupPurchaseService groupPurchaseService;
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GroupPurchaseResponseDto> add(@RequestBody GroupPurchaseRequestDto dto) {
@@ -70,5 +71,14 @@ public class GroupPurchaseController {
     @PostMapping(value = "/upload-test", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> uploadTest(@RequestPart("file") MultipartFile file) {
         return ResponseEntity.ok("파일 이름: " + file.getOriginalFilename());
+    }
+
+    @PostMapping("/{id}/join")
+    public ResponseEntity<Void> join(@PathVariable Long id) {
+        Member MockMember = memberRepository.findById(3L)
+                .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_MEMBER));
+        groupPurchaseService.join(id, MockMember);
+        log.info("member: {}", MockMember);
+        return ResponseEntity.noContent().build();
     }
 }

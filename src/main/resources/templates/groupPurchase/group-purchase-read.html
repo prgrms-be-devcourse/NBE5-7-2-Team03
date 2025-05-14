@@ -113,6 +113,20 @@
         }
     });
 
+    document.querySelector(".join-button").addEventListener("click", async () => {
+        const groupId = [[${groupId}]];
+        const res = await fetch(`/api/group-purchases/${groupId}/join`, {
+            method: "POST"
+        });
+
+        if (res.ok) {
+            alert("참여 완료!");
+            location.reload();
+        } else {
+            alert("참여에 실패했습니다.");
+        }
+    });
+
 </script>
 </body>
 </html>
