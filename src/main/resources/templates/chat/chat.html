@@ -47,12 +47,13 @@
   let stompClient = null;
   const nickname = [[${nickname}]];
   const roomId = [[${roomId}]]
+  let isLast = false;
+  let cursor = null;
+  let isLoading = false;
 
   // Get DOM elements
   const messageInput = document.getElementById('message');
-  const sendButton = document.getElementById('send-button');
-  const connectionStatus = document.getElementById('connection-status');
-  const connectionBanner = document.getElementById('connection-banner');
+  const chatMessages = document.getElementById('chat-messages');
 
   // 연결하면 채팅방 접속
   document.addEventListener('DOMContentLoaded', async function () {
@@ -68,12 +69,13 @@
       });
     });
 
-    const data = await fetchChatMessages(roomId);
+    // 가장 최근 메시지 20개 조회
+    const data = await fetchChatMessages(roomId, 10);
     if (data && data.length > 0) {
-      const chatMessages = document.getElementById('chat-messages');
+      // const chatMessages = document.getElementById('chat-messages');
 
       // 메시지 역순으로 표시 (오래된 메시지부터)
-      const messages = data.reverse();
+      const messages = data;
 
       // 채팅 상단에 메시지 추가
       messages.forEach(message => {
@@ -84,6 +86,33 @@
       chatMessages.scrollTop = chatMessages.scrollHeight;
     }
   });
+
+  chatMessages.addEventListener('scroll', async function handleScroll() {
+    // 1. 스크롤 위치 확인 (상단 근처인지)
+    // 2. 이미 로딩 중이거나 마지막 페이지면 무시
+    if (chatMessages.scrollTop > 100 || isLast || isLoading) return;
+
+    // 로딩 시작
+    isLoading = true;
+
+    try {
+      // 메시지 가져오기 (다음 페이지 요청)
+      const data = await fetchChatMessages(roomId, 10);
+
+      if (data && data.length > 0) {
+        // 메시지를 채팅창 상단에 추가
+        data.forEach(message => {
+          prependMessageToChat(message);
+        });
+      }
+    } catch (error) {
+      console.error('메시지 불러오기 실패:', error);
+    } finally {
+      // 로딩 완료
+      isLoading = false;
+    }
+  });
+
 
   // 메시지 전송
   function sendMessage() {
@@ -132,7 +161,7 @@
     return messageDiv;
   }
 
-  // HTML에 메시지 추가 (최신 메시지)
+  // 메시지 추가 (최신 메시지)
   function addMessageToChat(payload) {
     const chatMessages = document.getElementById('chat-messages');
     const isCurrentUser = payload.nickname === nickname;
@@ -173,7 +202,7 @@
   }
 
   // 메시지 불러오기
-  async function fetchChatMessages(roomId, cursor = null, limit = 20) {
+  async function fetchChatMessages(roomId, limit = 20) {
     const url = new URL(`/chat/${roomId}/messages`, window.location.origin);
     // URL에 쿼리 파라미터 추가
     if (cursor !== null) {
@@ -189,6 +218,14 @@
       if (response.ok) {
         // 응답이 성공적이면, JSON 데이터를 반환
         const data = await response.json();
+        if (data.length < limit) {
+          isLast = true;
+        } else {
+          isLast = false;
+          cursor = data[limit-1].messageId;
+          console.log("cursor : " + cursor);
+        }
+
         return data; // 메시지 리스트 반환
       } else {
         // 응답 실패 시
