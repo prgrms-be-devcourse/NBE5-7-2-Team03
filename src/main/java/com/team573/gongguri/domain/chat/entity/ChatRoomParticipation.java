@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
     public class ChatRoomParticipation {
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
-        private Long ChatRoomParticipantId;
+        private Long chatRoomParticipantId;
 
         @ManyToOne(fetch = FetchType.LAZY)
         @JoinColumn(name = "member_id", nullable = false)
@@ -22,5 +22,5 @@ import lombok.NoArgsConstructor;
 
         @ManyToOne(fetch = FetchType.LAZY)
         @JoinColumn(name = "chat_room_id", nullable = false)
-        private ChatRoom ChatRoom;
+        private ChatRoom chatRoom;
     }

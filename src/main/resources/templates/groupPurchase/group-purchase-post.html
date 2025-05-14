@@ -2,11 +2,11 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>공동구매 작성</title>
-    <link rel="stylesheet" th:href="@{/css/styles.css}" />
-    <link rel="stylesheet" th:href="@{/css/groupPurchase/group-purchase-post_style.css}" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" th:href="@{/css/groupPurchase/group-purchase-post_style.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
 <div th:replace="~{fragments/layout :: mobileContainer}">
@@ -21,25 +21,25 @@
                         <img src="/images/camera-icon.png" alt="카메라" />
                         <span>이미지 업로드</span>
                     </label>
-                    <input type="file" id="imageUpload" accept="image/*" style="display: none;" />
+                    <input type="file" id="imageUpload" name="imageFile" accept="image/*" style="display: none;" />
                 </div>
 
                 <!-- 제목 -->
                 <div class="form-section">
                     <label for="title">제목</label>
-                    <input type="text" id="title" placeholder="제목" required />
+                    <input type="text" id="title" name="title" placeholder="제목" required />
                 </div>
 
                 <!-- 가격 -->
                 <div class="form-section">
                     <label for="price">가격</label>
-                    <input type="number" id="price" placeholder="₩ 1인당 가격을 입력해주세요." required />
+                    <input type="number" id="price" name="price" placeholder="₩ 1인당 가격을 입력해주세요." required />
                 </div>
 
                 <!-- 은행 선택 -->
                 <div class="form-section">
                     <label for="bank">은행</label>
-                    <select id="bank" required>
+                    <select id="bank" name="bank" required>
                         <option value="">은행 선택</option>
                         <option value="신한">신한</option>
                         <option value="국민">국민</option>
@@ -54,7 +54,7 @@
                 <!-- 계좌번호 -->
                 <div class="form-section">
                     <label for="account">계좌 번호</label>
-                    <input type="text" id="account" placeholder="계좌 번호" required />
+                    <input type="text" id="account" name="account" placeholder="계좌 번호" required />
                 </div>
 
                 <!-- 인원 -->
@@ -64,14 +64,14 @@
                         <button type="button" onclick="decreaseCount()">−</button>
                         <span id="count">1</span>
                         <button type="button" onclick="increaseCount()">+</button>
-                        <input type="hidden" id="peopleCount" value="1" />
+                        <input type="hidden" id="peopleCount" name="maxParticipants" value="1" />
                     </div>
                 </div>
 
                 <!-- 내용 -->
                 <div class="form-section">
                     <label for="content">내용</label>
-                    <textarea id="content" placeholder="내용을 입력하세요." required></textarea>
+                    <textarea id="content" name="content" placeholder="내용을 입력하세요." required></textarea>
                 </div>
 
                 <!-- 작성 버튼 -->
@@ -80,7 +80,6 @@
                 </div>
             </form>
         </main>
-
 
         <div th:replace="~{fragments/bottombar :: bottomNav('home')}"></div>
     </div>
@@ -105,60 +104,33 @@
     document.getElementById("groupPurchaseForm").addEventListener("submit", async function (e) {
         e.preventDefault();
 
-        const requestData = {
-            title: document.getElementById("title").value,
-            content: document.getElementById("content").value,
-            price: parseInt(document.getElementById("price").value),
-            maxParticipants: parseInt(document.getElementById("peopleCount").value),
-            bank: document.getElementById("bank").value,
-            account: document.getElementById("account").value
-        };
+        const formData = new FormData();
+        const imageFile = document.getElementById("imageUpload").files[0];
+
+        if (imageFile) formData.append("imageFile", imageFile);
+        formData.append("title", document.getElementById("title").value);
+        formData.append("price", document.getElementById("price").value);
+        formData.append("bank", document.getElementById("bank").value);
+        formData.append("account", document.getElementById("account").value);
+        formData.append("maxParticipants", document.getElementById("peopleCount").value);
+        formData.append("content", document.getElementById("content").value);
 
         try {
             const res = await fetch("/api/group-purchases", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(requestData)
+                body: formData
             });
 
             if (res.ok) {
-                const result = await res.json(); // { id: 123 }
-                await uploadImage(result.id);
-                window.location.href = "/groupPurchase"; // 목록으로
+                window.location.href = "/groupPurchase";
             } else {
-                const err = await res.text();
-                alert("등록 실패: " + err);
+                const errorText = await res.text();
+                alert("등록 실패: " + errorText);
             }
         } catch (err) {
             alert("에러 발생: " + err.message);
         }
     });
-
-    async function uploadImage(groupPurchaseId) {
-        const file = document.getElementById("imageUpload").files[0];
-        if (!file) return;
-
-        return new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = async () => {
-                const imageBase64 = reader.result;
-
-                const response = await fetch(`/api/group-purchases/${groupPurchaseId}/image`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ imageBase64 })
-                });
-
-                if (!response.ok) {
-                    const msg = await response.text();
-                    alert("이미지 업로드 실패: " + msg);
-                }
-
-                resolve();
-            };
-            reader.readAsDataURL(file);
-        });
-    }
 </script>
 </body>
 </html>

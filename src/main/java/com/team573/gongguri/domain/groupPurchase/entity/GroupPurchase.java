@@ -28,7 +28,7 @@ import lombok.NoArgsConstructor;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chat_room_id", nullable = false)
-    private ChatRoom ChatRoom;
+    private ChatRoom chatRoom;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -63,7 +63,7 @@ import lombok.NoArgsConstructor;
     {
         this.member = member;
         this.univ = univ;
-        this.ChatRoom = chatRoom;
+        this.chatRoom = chatRoom;
         this.progressStatus = progressStatus;
         this.title = title;
         this.content = content;

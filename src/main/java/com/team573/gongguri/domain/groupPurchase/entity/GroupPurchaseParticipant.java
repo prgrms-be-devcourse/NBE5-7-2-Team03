@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
     public class GroupPurchaseParticipant {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long GroupParticipantId;
+    private Long groupParticipantId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id", nullable = false)
