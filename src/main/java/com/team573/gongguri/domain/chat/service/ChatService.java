@@ -69,4 +69,10 @@ public class ChatService {
 
         chatRoomParticipationRepository.deleteByChatRoomAndMember(chatRoom, member);
     }
+
+    // 채팅방 찾기
+    public Long getChatRoomIdByGroupPurchaseId(Long groupPurchaseId) {
+        ChatRoom findChatRoom = chatRoomRepository.findChatRoomByGroupId(groupPurchaseId);
+        return findChatRoom.getChatRoomId();
+    }
 }

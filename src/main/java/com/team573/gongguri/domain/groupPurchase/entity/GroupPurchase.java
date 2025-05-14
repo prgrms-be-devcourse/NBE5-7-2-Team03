@@ -36,7 +36,7 @@ public class GroupPurchase extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chat_room_id", nullable = false)
-    private ChatRoom ChatRoom;
+    private ChatRoom chatRoom;
 
     @Column(nullable = false)
     private Enum<ProgressStatus> progressStatus;

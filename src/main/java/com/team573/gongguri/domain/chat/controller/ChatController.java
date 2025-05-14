@@ -12,6 +12,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 @Controller
 @RequiredArgsConstructor
@@ -29,13 +30,17 @@ public class ChatController {
         return chatService.addChatMessage(roomId, requestDto);
     }
 
-    @GetMapping("/chat")
-    public String chat(
+    @GetMapping("/group-purchases/{groupPurchaseId}/chat")
+    public String groupPurchaseChat(
+        @PathVariable Long groupPurchaseId,
         Model model,
         @AuthenticationPrincipal CustomUserDetails customUserDetails
     ) {
+        Long roomId = chatService.getChatRoomIdByGroupPurchaseId(groupPurchaseId);
+
         model.addAttribute("nickname", customUserDetails.getNickname());
-        model.addAttribute("roomId", 1);
+        model.addAttribute("roomId", roomId);
+
         return "chat/chat";
     }
 }
