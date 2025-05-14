@@ -53,11 +53,10 @@
         const statusClass = item.progressStatus === 'OPEN' ? 'status-open' : 'status-done';
 
         return `
-      <a href="/group-purchase/${item.id}" class="purchase-card">
+      <a href="/groupPurchase/${item.id}" class="purchase-card">
         <img src="${item.imageUrl || 'https://via.placeholder.com/110x90'}" alt="item">
         <div class="purchase-info">
           <div class="purchase-title">${item.title}</div>
-          <div class="purchase-meta">${item.createdAt} - ${item.category || '기타'}</div>
           <div class="purchase-footer">
             <span>👥 ${item.currentParticipants || 0}/${item.maxParticipants}</span>
             <span class="status-badge ${statusClass}">${item.progressStatus}</span>
