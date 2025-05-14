@@ -7,5 +7,6 @@ public record GroupPurchaseRequestDto(
         int maxParticipants,
         String bank,
         String account,
-        String progressStatus
+        String progressStatus,
+        String imageUrl
 ) {}

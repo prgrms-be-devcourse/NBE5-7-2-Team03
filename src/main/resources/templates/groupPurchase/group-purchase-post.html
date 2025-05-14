@@ -18,10 +18,11 @@
                 <!-- 이미지 업로드 -->
                 <div class="form-section">
                     <label for="imageUpload" class="image-upload-label">
-                        <img src="/images/camera-icon.png" alt="카메라" />
+                        <img id="imagePreview" src="" alt="미리보기" />
                         <span>이미지 업로드</span>
                     </label>
-                    <input type="file" id="imageUpload" name="imageFile" accept="image/*" style="display: none;" />
+                    <input type="file" id="imageUpload" accept="image/*" style="display: none;" />
+                    <input type="hidden" id="imageUrl" name="imageUrl" />
                 </div>
 
                 <!-- 제목 -->
@@ -101,24 +102,60 @@
         }
     }
 
+    // 이미지 업로드 → 서버로 전송 후 URL 저장
+    document.getElementById("imageUpload").addEventListener("change", async function(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById("imagePreview").src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+
+        const formData = new FormData();
+        formData.append("imageFile", file);
+
+        try {
+            const res = await fetch("/api/images", {
+                method: "POST",
+                body: formData,
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                document.getElementById("imageUrl").value = data.imageUrl;
+                console.log("이미지 업로드 성공:", data.imageUrl);
+            } else {
+                const error = await res.text();
+                alert("이미지 업로드 실패: " + error);
+            }
+        } catch (err) {
+            alert("이미지 업로드 중 에러: " + err.message);
+        }
+    });
+
+    // 게시글 작성 요청 (JSON 방식)
     document.getElementById("groupPurchaseForm").addEventListener("submit", async function (e) {
         e.preventDefault();
 
-        const formData = new FormData();
-        const imageFile = document.getElementById("imageUpload").files[0];
-
-        if (imageFile) formData.append("imageFile", imageFile);
-        formData.append("title", document.getElementById("title").value);
-        formData.append("price", document.getElementById("price").value);
-        formData.append("bank", document.getElementById("bank").value);
-        formData.append("account", document.getElementById("account").value);
-        formData.append("maxParticipants", document.getElementById("peopleCount").value);
-        formData.append("content", document.getElementById("content").value);
+        const body = {
+            title: document.getElementById("title").value,
+            price: document.getElementById("price").value,
+            bank: document.getElementById("bank").value,
+            account: document.getElementById("account").value,
+            maxParticipants: document.getElementById("peopleCount").value,
+            content: document.getElementById("content").value,
+            imageUrl: document.getElementById("imageUrl").value
+        };
 
         try {
             const res = await fetch("/api/group-purchases", {
                 method: "POST",
-                body: formData
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(body),
             });
 
             if (res.ok) {

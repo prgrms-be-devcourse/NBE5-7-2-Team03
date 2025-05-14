@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 
 @Entity
@@ -52,15 +53,23 @@ import lombok.NoArgsConstructor;
     @Column(nullable = false)
     private String account;
 
+    @Setter
+    @Column(nullable = true)
+    private String imageUrl;
+
     @Builder
-    public GroupPurchase(Member member, Univ univ,
-                         ChatRoom chatRoom,
-                         ProgressStatus progressStatus,
-                         String title, String content,
-                         int price, int maxParticipants,
-                         String bank, String account
-                        )
-    {
+    public GroupPurchase(
+            Member member,
+            Univ univ,
+            ChatRoom chatRoom,
+            ProgressStatus progressStatus,
+            String title,
+            String content,
+            int price,
+            int maxParticipants,
+            String bank,
+            String account
+    ) {
         this.member = member;
         this.univ = univ;
         this.chatRoom = chatRoom;
@@ -91,5 +100,9 @@ import lombok.NoArgsConstructor;
         this.bank = bank;
         this.account = account;
         this.progressStatus = progressStatus;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }

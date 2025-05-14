@@ -10,19 +10,20 @@ import com.team573.gongguri.domain.member.entity.Univ;
 
 public class GroupPurchaseMapper {
     public static GroupPurchase toEntity(GroupPurchaseRequestDto dto, Member writer, ChatRoom chatRoom, Univ univ) {
-       return GroupPurchase.builder()
-               .member(writer)
-               .chatRoom(chatRoom)
-               .univ(univ)
-               .title(dto.title())
-               .content(dto.content())
-               .price(dto.price())
-               .maxParticipants(dto.maxParticipants())
-               .bank(dto.bank())
-               .account(dto.account())
-               .progressStatus(ProgressStatus.RECRUITING)
-               .build();
+        return GroupPurchase.builder()
+                .member(writer)
+                .chatRoom(chatRoom)
+                .univ(univ)
+                .title(dto.title())
+                .content(dto.content())
+                .price(dto.price())
+                .maxParticipants(dto.maxParticipants())
+                .bank(dto.bank())
+                .account(dto.account())
+                .progressStatus(ProgressStatus.RECRUITING)
+                .build(); // imageUrl은 add/update 시 service에서 set
     }
+
     public static GroupPurchaseResponseDto toDto(GroupPurchase entity) {
         return new GroupPurchaseResponseDto(
                 entity.getGroupId(),
@@ -32,7 +33,8 @@ public class GroupPurchaseMapper {
                 entity.getMaxParticipants(),
                 entity.getBank(),
                 entity.getAccount(),
-                entity.getProgressStatus().toString()
+                entity.getProgressStatus().toString(),
+                entity.getImageUrl()
         );
     }
 }

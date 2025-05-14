@@ -10,5 +10,6 @@ public record GroupPurchaseResponseDto(
         int maxParticipants,
         String bank,
         String account,
-        String progressStatus
+        String progressStatus,
+        String imageUrl
 ) {}

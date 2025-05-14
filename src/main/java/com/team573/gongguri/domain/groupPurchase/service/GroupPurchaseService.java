@@ -27,12 +27,13 @@ public class GroupPurchaseService {
     public GroupPurchaseResponseDto add(GroupPurchaseRequestDto dto, Member writer, ChatRoom chatRoom, Univ univ) {
         try {
             GroupPurchase entity = GroupPurchaseMapper.toEntity(dto, writer, chatRoom, univ);
+            entity.setImageUrl(dto.imageUrl()); // 이미지 URL 직접 설정
+
             repository.save(entity);
             return GroupPurchaseMapper.toDto(entity);
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new ErrorException(ErrorCode.CREATE_FAILED_GROUP_PURCHASE);
         }
-
     }
 
     @Transactional(readOnly = true)
@@ -54,7 +55,9 @@ public class GroupPurchaseService {
         try {
             GroupPurchase entity = repository.findById(id)
                     .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_GROUP_PURCHASE));
-            entity.update(dto.title(),
+
+            entity.update(
+                    dto.title(),
                     dto.content(),
                     dto.price(),
                     dto.maxParticipants(),
@@ -62,8 +65,10 @@ public class GroupPurchaseService {
                     dto.account(),
                     ProgressStatus.valueOf(dto.progressStatus().toUpperCase())
             );
+            entity.setImageUrl(dto.imageUrl()); // 업데이트 시에도 imageUrl 반영
+
             return GroupPurchaseMapper.toDto(entity);
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new ErrorException(ErrorCode.UPDATE_FAILED_GROUP_PURCHASE);
         }
     }
