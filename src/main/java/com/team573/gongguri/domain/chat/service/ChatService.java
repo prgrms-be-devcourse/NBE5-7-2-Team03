@@ -41,9 +41,10 @@ public class ChatService {
     }
 
     // 채팅방 생성
-    public void addChatRoom(Long roomId, String email) {
-        chatRoomRepository.save(new ChatRoom());
-        addChatParticipation(roomId, email);
+    public ChatRoom addChatRoom(String email) {
+        ChatRoom chatRoom = chatRoomRepository.save(new ChatRoom());
+        addChatParticipation(chatRoom.getChatRoomId(), email);
+        return chatRoom;
     }
 
     // 채팅방 참여자 추가
