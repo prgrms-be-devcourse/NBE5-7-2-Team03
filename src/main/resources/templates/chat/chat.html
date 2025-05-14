@@ -55,7 +55,7 @@
   const connectionBanner = document.getElementById('connection-banner');
 
   // 연결하면 채팅방 접속
-  document.addEventListener('DOMContentLoaded', function () {
+  document.addEventListener('DOMContentLoaded', async function () {
 
     const socket = new SockJS('/stomp'); // WebSocket 엔드포인트 (예: WebSocketConfig에서 설정한 엔드포인트)
     stompClient = Stomp.over(socket);
@@ -67,8 +67,25 @@
         addMessageToChat(payload);
       });
     });
+
+    const data = await fetchChatMessages(roomId);
+    if (data && data.length > 0) {
+      const chatMessages = document.getElementById('chat-messages');
+
+      // 메시지 역순으로 표시 (오래된 메시지부터)
+      const messages = data.reverse();
+
+      // 채팅 상단에 메시지 추가
+      messages.forEach(message => {
+        prependMessageToChat(message);
+      });
+
+      // 메시지 추가 후 스크롤 위치 유지
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
   });
 
+  // 메시지 전송
   function sendMessage() {
     const message = messageInput.value;
 
@@ -84,21 +101,15 @@
     messageInput.focus();
   }
 
-  function addMessageToChat(payload) {
-    const chatMessages = document.getElementById('chat-messages');
-    const isCurrentUser = payload.nickname === nickname;
-
+  // 공통 메시지 생성 함수
+  function createMessageElement(payload, isCurrentUser) {
     const messageDiv = document.createElement('div');
     messageDiv.className = isCurrentUser ? 'message sent' : 'message received';
 
     const contentDiv = document.createElement('div');
     contentDiv.className = 'message-content';
 
-    // Message text
-    const messagePara = document.createElement('p');
-    messagePara.textContent = payload.content;
-
-    // Sender name (only for received messages)
+    // 발신자 이름 (받은 메시지만 표시)
     if (!isCurrentUser) {
       const senderSpan = document.createElement('span');
       senderSpan.className = 'message-sender';
@@ -106,22 +117,45 @@
       contentDiv.appendChild(senderSpan);
     }
 
-    // Time
+    // 메시지 내용
+    const messagePara = document.createElement('p');
+    messagePara.textContent = payload.content;
+    contentDiv.appendChild(messagePara);
+
+    // 메시지 시간
     const timeSpan = document.createElement('span');
     timeSpan.className = 'message-time';
-
-    // Format timestamp
-    timeSpan.textContent = formatLocalDateTime(payload.createdAt);
-
-    contentDiv.appendChild(messagePara);
+    timeSpan.textContent = formatLocalDateTime(payload.createdAt || new Date().toISOString());
     contentDiv.appendChild(timeSpan);
-    messageDiv.appendChild(contentDiv);
-    chatMessages.appendChild(messageDiv);
 
-    // Scroll to bottom
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    messageDiv.appendChild(contentDiv);
+    return messageDiv;
   }
 
+  // HTML에 메시지 추가 (최신 메시지)
+  function addMessageToChat(payload) {
+    const chatMessages = document.getElementById('chat-messages');
+    const isCurrentUser = payload.nickname === nickname;
+    const messageElement = createMessageElement(payload, isCurrentUser);
+
+    chatMessages.appendChild(messageElement);
+    chatMessages.scrollTop = chatMessages.scrollHeight; // 자동 스크롤
+  }
+
+  // 채팅 상단에 메시지 추가 (이전 메시지 로딩용)
+  function prependMessageToChat(payload) {
+    const chatMessages = document.getElementById('chat-messages');
+    const isCurrentUser = payload.nickname === nickname;
+    const messageElement = createMessageElement(payload, isCurrentUser);
+
+    if (chatMessages.firstChild) {
+      chatMessages.insertBefore(messageElement, chatMessages.firstChild);
+    } else {
+      chatMessages.appendChild(messageElement);
+    }
+  }
+
+  // 타임스탬프
   function formatLocalDateTime(localDateTimeStr) {
     const timestamp = new Date(localDateTimeStr.replace('T', ' '));
 
@@ -136,6 +170,35 @@
 
     // 최종 포맷된 문자열 반환 (YYYY-MM-DD HH:MM)
     return `${year}-${month}-${day} ${hours}:${minutes}`;
+  }
+
+  // 메시지 불러오기
+  async function fetchChatMessages(roomId, cursor = null, limit = 20) {
+    const url = new URL(`/chat/${roomId}/messages`, window.location.origin);
+    // URL에 쿼리 파라미터 추가
+    if (cursor !== null) {
+      url.searchParams.append('cursor', cursor);
+    }
+    url.searchParams.append('limit', limit);
+
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+      });
+
+      if (response.ok) {
+        // 응답이 성공적이면, JSON 데이터를 반환
+        const data = await response.json();
+        return data; // 메시지 리스트 반환
+      } else {
+        // 응답 실패 시
+        const errorText = await response.text();
+        alert(`오류 발생: ${errorText}`);
+      }
+    } catch (error) {
+      // 네트워크 에러 등 예외 처리
+      alert(`에러 발생: ${error.message}`);
+    }
   }
 
   // Handle Enter key in message input

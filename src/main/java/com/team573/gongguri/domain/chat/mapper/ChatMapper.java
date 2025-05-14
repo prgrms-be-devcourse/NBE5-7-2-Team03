@@ -20,6 +20,7 @@ public class ChatMapper {
 
     public static ChatMessageResponseDto toChatMessageResponseDto(ChatMessage chatMessage) {
         return ChatMessageResponseDto.builder()
+            .messageId(chatMessage.getId().toHexString())
             .content(chatMessage.getContent())
             .nickname(chatMessage.getNickname())
             .createdAt(chatMessage.getCreatedAt())

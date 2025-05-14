@@ -17,7 +17,11 @@ import com.team573.gongguri.domain.chat.repository.ChatRoomRepository;
 import com.team573.gongguri.domain.member.entity.Member;
 import com.team573.gongguri.domain.member.repository.MemberRepository;
 import com.team573.gongguri.global.exception.ErrorException;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.bson.types.ObjectId;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -75,5 +79,27 @@ public class ChatService {
     public Long getChatRoomIdByGroupPurchaseId(Long groupPurchaseId) {
         ChatRoom findChatRoom = chatRoomRepository.findChatRoomByGroupId(groupPurchaseId);
         return findChatRoom.getChatRoomId();
+    }
+
+    // 이전 채팅 메시지 조회
+    public List<ChatMessageResponseDto> getMessages(Long roomId, String cursor, int size) {
+        PageRequest pageRequest = PageRequest.of(0, size);
+        List<ChatMessage> messages;
+
+        if (cursor == null || cursor.isBlank()) {
+            // 최신 메시지 조회
+            messages = chatMessageRepository.findLatestByRoomId(roomId, pageRequest);
+        } else {
+            // 커서 이전 메시지 조회
+            ObjectId cursorId = new ObjectId(cursor);
+            messages = chatMessageRepository.findLatestByRoomIdAndCursor(roomId, cursorId, pageRequest);
+        }
+
+        // 오래된 순으로 정렬
+//        Collections.reverse(messages);
+
+        return messages.stream()
+            .map(ChatMapper::toChatMessageResponseDto)
+            .collect(Collectors.toList());
     }
 }
