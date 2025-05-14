@@ -95,9 +95,6 @@ public class ChatService {
             messages = chatMessageRepository.findLatestByRoomIdAndCursor(roomId, cursorId, pageRequest);
         }
 
-        // 오래된 순으로 정렬
-//        Collections.reverse(messages);
-
         return messages.stream()
             .map(ChatMapper::toChatMessageResponseDto)
             .collect(Collectors.toList());
