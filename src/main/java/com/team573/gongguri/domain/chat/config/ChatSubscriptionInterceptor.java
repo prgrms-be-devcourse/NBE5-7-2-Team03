@@ -3,7 +3,7 @@ package com.team573.gongguri.domain.chat.config;
 import static com.team573.gongguri.global.exception.ErrorCode.FAILED_AUTHENTICATION;
 import static com.team573.gongguri.global.exception.ErrorCode.INVALID_REQUEST;
 import static com.team573.gongguri.global.exception.ErrorCode.NOT_FOUND_MEMBER;
-import static com.team573.gongguri.global.exception.ErrorCode.NOT_FOUND_ROOM;
+import static com.team573.gongguri.global.exception.ErrorCode.NOT_FOUND_CHATROOM;
 
 import com.team573.gongguri.domain.chat.entity.ChatRoom;
 import com.team573.gongguri.domain.chat.repository.ChatRoomParticipationRepository;
@@ -70,7 +70,7 @@ public class ChatSubscriptionInterceptor implements ChannelInterceptor {
                 Member member = memberRepository.findByEmail(email)
                     .orElseThrow(() -> new ErrorException(NOT_FOUND_MEMBER));
                 ChatRoom chatRoom = chatRoomRepository.findById(roomId)
-                    .orElseThrow(() -> new ErrorException(NOT_FOUND_ROOM));
+                    .orElseThrow(() -> new ErrorException(NOT_FOUND_CHATROOM));
 
                 if (!chatRoomParticipationRepository.existsByChatRoomAndMember(chatRoom, member)) {
                     throw new ErrorException(NOT_FOUND_MEMBER);

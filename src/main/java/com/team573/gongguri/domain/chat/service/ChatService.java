@@ -3,7 +3,7 @@ package com.team573.gongguri.domain.chat.service;
 
 import static com.team573.gongguri.domain.chat.mapper.ChatMapper.toChatRoomParticipation;
 import static com.team573.gongguri.global.exception.ErrorCode.NOT_FOUND_MEMBER;
-import static com.team573.gongguri.global.exception.ErrorCode.NOT_FOUND_ROOM;
+import static com.team573.gongguri.global.exception.ErrorCode.NOT_FOUND_CHATROOM;
 
 import com.team573.gongguri.domain.chat.dto.ChatMessageRequestDto;
 import com.team573.gongguri.domain.chat.dto.ChatMessageResponseDto;
@@ -57,7 +57,7 @@ public class ChatService {
             .orElseThrow(() -> new ErrorException(NOT_FOUND_MEMBER));
 
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
-            .orElseThrow(() -> new ErrorException(NOT_FOUND_ROOM));
+            .orElseThrow(() -> new ErrorException(NOT_FOUND_CHATROOM));
 
         ChatRoomParticipation createdParticipation = toChatRoomParticipation(member, chatRoom);
 
@@ -70,7 +70,7 @@ public class ChatService {
             .orElseThrow(() -> new ErrorException(NOT_FOUND_MEMBER));
 
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
-            .orElseThrow(() -> new ErrorException(NOT_FOUND_ROOM));
+            .orElseThrow(() -> new ErrorException(NOT_FOUND_CHATROOM));
 
         chatRoomParticipationRepository.deleteByChatRoomAndMember(chatRoom, member);
     }
