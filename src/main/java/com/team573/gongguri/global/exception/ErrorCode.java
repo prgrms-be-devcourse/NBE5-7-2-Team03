@@ -1,10 +1,13 @@
 package com.team573.gongguri.global.exception;
 
+import static com.team573.gongguri.global.exception.ErrorStatus.BAD_REQUEST;
+import static com.team573.gongguri.global.exception.ErrorStatus.CONFLICT;
+import static com.team573.gongguri.global.exception.ErrorStatus.FORBIDDEN;
+import static com.team573.gongguri.global.exception.ErrorStatus.NOT_FOUND;
+import static com.team573.gongguri.global.exception.ErrorStatus.UNAUTHORIZED;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.springframework.http.HttpStatus;
-
-import static com.team573.gongguri.global.exception.ErrorStatus.*;
 
 @Getter
 @AllArgsConstructor
@@ -29,7 +32,7 @@ public enum ErrorCode {
     NOT_FOUND_MEMBER(NOT_FOUND, "MEMBER-001", "존재하지 않는 회원입니다."),
 
     // CHAT
-    NOT_FOUND_ROOM(NOT_FOUND, "CHAT-001", "존재하지 않는 채팅방입니다."),
+    NOT_FOUND_CHATROOM(NOT_FOUND, "CHAT-001", "존재하지 않는 채팅방입니다."),
     NOT_PARTICIPATING(FORBIDDEN, "CHAT-002", "채팅방에 참여하고 있지 않습니다."),
 
     //UNIV
