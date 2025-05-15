@@ -1,14 +1,8 @@
 package com.team573.gongguri.domain.groupPurchase.controller;
 
-import com.team573.gongguri.domain.chat.repository.ChatRoomRepository;
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseRequestDto;
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseResponseDto;
 import com.team573.gongguri.domain.groupPurchase.service.GroupPurchaseService;
-import com.team573.gongguri.domain.member.entity.Member;
-import com.team573.gongguri.domain.member.repository.MemberRepository;
-import com.team573.gongguri.domain.member.repository.UnivRepository;
-import com.team573.gongguri.global.exception.ErrorCode;
-import com.team573.gongguri.global.exception.ErrorException;
 import com.team573.gongguri.global.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,8 +20,6 @@ import java.util.List;
 @Slf4j
 public class GroupPurchaseController {
     private final GroupPurchaseService service;
-    private final MemberRepository memberRepository;
-
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GroupPurchaseResponseDto> add(
@@ -40,24 +32,19 @@ public class GroupPurchaseController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdDto);
     }
 
-
     @GetMapping("/{id}")
     public ResponseEntity<GroupPurchaseResponseDto> get(
             @PathVariable Long id,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        Member member = memberRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_MEMBER));
-        return ResponseEntity.ok(service.get(id, member));
+        String email = userDetails.getUsername();
+        return ResponseEntity.ok(service.get(id, email));
     }
 
     @GetMapping
     public ResponseEntity<List<GroupPurchaseResponseDto>> getAll(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-
-        Member member = memberRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_MEMBER));
-
-        return ResponseEntity.ok(service.getAll(member));
+        String email = userDetails.getUsername();
+        return ResponseEntity.ok(service.getAll(email));
     }
 
     @PutMapping("/{id}")
@@ -68,23 +55,21 @@ public class GroupPurchaseController {
         return ResponseEntity.ok(service.update(id, dto));
     }
 
-
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
 
-
     @PostMapping("/{id}/join")
     public ResponseEntity<Void> join(
             @PathVariable Long id,
             @AuthenticationPrincipal CustomUserDetails customUserDetails
     ) {
-        Member member = memberRepository.findByEmail(customUserDetails.getUsername())
-                .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_MEMBER));
-        service.join(id, member);
-        log.info("member joined: {}", member.getEmail());
+        String email = customUserDetails.getUsername();
+        service.join(id, email);
+        log.info("member joined: {}", email);
         return ResponseEntity.noContent().build();
     }
 }
+

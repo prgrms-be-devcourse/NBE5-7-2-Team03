@@ -1,7 +1,6 @@
 package com.team573.gongguri.domain.groupPurchase.service;
 
 import com.team573.gongguri.domain.chat.entity.ChatRoom;
-import com.team573.gongguri.domain.chat.repository.ChatRoomRepository;
 import com.team573.gongguri.domain.chat.service.ChatService;
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseRequestDto;
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseResponseDto;
@@ -44,7 +43,7 @@ public class GroupPurchaseService {
 
         try {
             GroupPurchase entity = GroupPurchaseMapper.toEntity(dto, writer, chatRoom, univ);
-            entity.setImageUrl(dto.imageUrl()); // 이미지 URL 직접 설정
+            entity.setImageUrl(dto.imageUrl());
             groupPurchaseRepository.save(entity);
 
             GroupPurchaseParticipant participant = GroupPurchaseParticipant.builder()
@@ -63,20 +62,24 @@ public class GroupPurchaseService {
     }
 
     @Transactional(readOnly = true)
-    public GroupPurchaseResponseDto get(Long id, Member member) {
+    public GroupPurchaseResponseDto get(Long id, String email) {
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_MEMBER));
         GroupPurchase entity = groupPurchaseRepository.findById(id)
                 .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_GROUP_PURCHASE));
         int currentParticipants = participantRepository.countByGroupPurchase_GroupId(id);
-        boolean isParticipated = participantRepository.existsByGroupPurchase_GroupIdAndMember_Email(id, member.getEmail()); // 로그인 대체
+        boolean isParticipated = participantRepository.existsByGroupPurchase_GroupIdAndMember_Email(id, email);
         return GroupPurchaseMapper.toDto(entity, currentParticipants, isParticipated);
     }
 
     @Transactional(readOnly = true)
-    public List<GroupPurchaseResponseDto> getAll(Member member) {
+    public List<GroupPurchaseResponseDto> getAll(String email) {
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_MEMBER));
         return groupPurchaseRepository.findAll().stream()
                 .map(entity -> {
                     int currentParticipants = participantRepository.countByGroupPurchase_GroupId(entity.getGroupId());
-                    boolean isParticipated = participantRepository.existsByGroupPurchase_GroupIdAndMember_Email(entity.getGroupId(), member.getEmail());
+                    boolean isParticipated = participantRepository.existsByGroupPurchase_GroupIdAndMember_Email(entity.getGroupId(), email);
                     return GroupPurchaseMapper.toDto(entity, currentParticipants, isParticipated);
                 })
                 .collect(Collectors.toList());
@@ -97,7 +100,7 @@ public class GroupPurchaseService {
                     dto.account(),
                     ProgressStatus.valueOf(dto.progressStatus().toUpperCase())
             );
-            entity.setImageUrl(dto.imageUrl()); // 업데이트 시에도 imageUrl 반영
+            entity.setImageUrl(dto.imageUrl());
 
             return GroupPurchaseMapper.toDto(entity);
         } catch (Exception e) {
@@ -113,22 +116,19 @@ public class GroupPurchaseService {
     }
 
     @Transactional
-    public void join(Long groupId, Member member) {
-
-        if (member == null) {
-            log.error("[JOIN ERROR] Member is null");
-            throw new ErrorException(ErrorCode.NOT_FOUND_MEMBER);
-        }
+    public void join(Long groupId, String email) {
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_MEMBER));
 
         GroupPurchase groupPurchase = groupPurchaseRepository.findById(groupId)
                 .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_GROUP_PURCHASE));
 
         int currentCount = participantRepository.countByGroupPurchase_GroupId(groupId);
         if (currentCount >= groupPurchase.getMaxParticipants()) {
-            throw new ErrorException(ErrorCode.PARTICIPANT_LIMIT_REACHED); // 직접 정의한 에러코드
+            throw new ErrorException(ErrorCode.PARTICIPANT_LIMIT_REACHED);
         }
 
-        boolean alreadyJoined = participantRepository.existsByGroupPurchase_GroupIdAndMember_Email(groupId, member.getEmail());
+        boolean alreadyJoined = participantRepository.existsByGroupPurchase_GroupIdAndMember_Email(groupId, email);
         if (alreadyJoined) {
             throw new ErrorException(ErrorCode.ALREADY_JOINED);
         }
@@ -140,13 +140,11 @@ public class GroupPurchaseService {
                 .build();
 
         participantRepository.save(participant);
-
-        chatService.addChatParticipation(groupPurchase.getChatRoom().getChatRoomId(), member.getEmail());
+        chatService.addChatParticipation(groupPurchase.getChatRoom().getChatRoomId(), email);
 
         int afterJoinCount = currentCount + 1;
         if (afterJoinCount >= groupPurchase.getMaxParticipants()) {
             groupPurchase.setProgressStatus(ProgressStatus.CLOSED);
         }
     }
-
 }
