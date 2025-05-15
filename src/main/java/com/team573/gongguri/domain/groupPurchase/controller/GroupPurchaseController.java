@@ -11,11 +11,13 @@ import com.team573.gongguri.domain.member.repository.MemberRepository;
 import com.team573.gongguri.domain.member.repository.UnivRepository;
 import com.team573.gongguri.global.exception.ErrorCode;
 import com.team573.gongguri.global.exception.ErrorException;
+import com.team573.gongguri.global.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,9 +34,10 @@ public class GroupPurchaseController {
     private final ChatRoomRepository chatRoomRepository;
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<GroupPurchaseResponseDto> add(@RequestBody GroupPurchaseRequestDto dto) {
+    public ResponseEntity<GroupPurchaseResponseDto> add(@RequestBody GroupPurchaseRequestDto dto, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         log.info("[GroupPurchaseController] JSON 방식 게시글 작성 요청 수신");
-        GroupPurchaseResponseDto createdDto = service.add(dto);
+        String email = customUserDetails.getUsername();
+        GroupPurchaseResponseDto createdDto = service.add(dto, email);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdDto);
     }
 

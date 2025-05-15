@@ -2,6 +2,7 @@ package com.team573.gongguri.domain.groupPurchase.service;
 
 import com.team573.gongguri.domain.chat.entity.ChatRoom;
 import com.team573.gongguri.domain.chat.repository.ChatRoomRepository;
+import com.team573.gongguri.domain.chat.service.ChatService;
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseRequestDto;
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseResponseDto;
 import com.team573.gongguri.domain.groupPurchase.entity.GroupPurchase;
@@ -11,6 +12,7 @@ import com.team573.gongguri.domain.groupPurchase.repository.GroupPurchaseReposit
 import com.team573.gongguri.domain.member.entity.Member;
 import com.team573.gongguri.domain.member.entity.Univ;
 import com.team573.gongguri.domain.member.repository.MemberRepository;
+import com.team573.gongguri.domain.member.repository.UnivRepository;
 import com.team573.gongguri.global.exception.ErrorCode;
 import com.team573.gongguri.global.exception.ErrorException;
 import lombok.RequiredArgsConstructor;
@@ -26,19 +28,17 @@ public class GroupPurchaseService {
     private final GroupPurchaseRepository repository;
     private final MemberRepository memberRepository;
     private final ChatRoomRepository chatRoomRepository;
+    private final ChatService chatService;
 
     @Transactional
-    public GroupPurchaseResponseDto add(GroupPurchaseRequestDto dto) {
-        Member writer = memberRepository.findById(1L)  // 로그인 연동 전 테스트용 고정 ID
+    public GroupPurchaseResponseDto add(GroupPurchaseRequestDto dto, String email) {
+        Member writer = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_MEMBER));
 
         Univ univ = writer.getUniv();
-
-        ChatRoom chatRoom = chatRoomRepository.findById(1L)
-                .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_CHATROOM));
+        ChatRoom chatRoom = chatService.addChatRoom(email);
 
         try {
-
             GroupPurchase entity = GroupPurchaseMapper.toEntity(dto, writer, chatRoom, univ);
             repository.save(entity);
             return GroupPurchaseMapper.toDto(entity);
