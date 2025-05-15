@@ -20,14 +20,16 @@
     <main class="container">
       <!-- 상태 필터 -->
       <div class="status-filter">
-        <button class="filter-btn selected" onclick="filterStatus('ALL')">전체</button>
-        <button class="filter-btn" onclick="filterStatus('OPEN')">진행중</button>
-        <button class="filter-btn" onclick="filterStatus('DONE')">완료</button>
+        <button class="filter-btn selected" data-status="ALL" onclick="filterStatus('ALL')">전체</button>
+        <button class="filter-btn" data-status="RECRUITING" onclick="filterStatus('RECRUITING')">진행중</button>
+        <button class="filter-btn" data-status="CLOSED" onclick="filterStatus('CLOSED')">완료</button>
       </div>
 
       <!-- 카드 리스트 -->
       <div id="groupPurchaseList" class="purchase-list"></div>
 
+      <!-- 로딩 인디케이터 -->
+      <div id="loadingIndicator" class="loading-more" style="display: none;">로딩 중...</div>
     </main>
 
     <!-- ✅ Bottom Bar 유지 -->
@@ -61,8 +63,7 @@
   let currentStatus = 'ALL';
   const pageSize = 10;
   let isLoading = false;
-  let isLast = false;
-
+  let hasMoreData = true; // 더 로드할 데이터가 있는지 여부
 
   // Fetch data from API
   function fetchGroupPurchases(cursorId = null, status = 'ALL', size = 10) {
@@ -75,6 +76,8 @@
     if (status !== 'ALL') {
       url += '&progressStatus=' + status;
     }
+
+    console.log('Fetching data from:', url);
 
     return fetch(url)
     .then(response => {
@@ -90,46 +93,52 @@
   }
 
   // Load initial data
-  function loadInitialData(status = 'ALL') {
-    if (isLoading || isLast) return;
+  async function loadInitialData(status = 'ALL') {
+    if (isLoading) return;
 
+    hasMoreData = true;
+    lastCursorId = null;
     isLoading = true;
+    currentStatus = status;
+
     const list = document.getElementById('groupPurchaseList');
     list.innerHTML = '<div class="loading">Loading...</div>';
 
-    currentStatus = status;
-    lastCursorId = null;
+    try {
+      const data = await fetchGroupPurchases(null, status, pageSize);
 
-    fetchGroupPurchases(null, status, pageSize)
-    .then(data => {
       if (data.length > 0) {
         const cards = data.map(renderCard).join('');
         list.innerHTML = cards;
 
         // Update the cursor for pagination
         lastCursorId = data[data.length - 1].id;
-        if (data.length === pageSize) {
-          isLast = true;
-        }
+
+        // 가져온 데이터가 pageSize보다 적으면 더 이상 데이터가 없는 것
+        hasMoreData = data.length >= pageSize;
+        console.log('Initial data loaded, hasMoreData:', hasMoreData);
+      } else {
+        list.innerHTML = '<div class="no-data">데이터가 없습니다.</div>';
+        hasMoreData = false;
       }
+    } catch (error) {
+      console.error('Failed to load initial data:', error);
+      list.innerHTML = '<div class="error">데이터를 불러오는 중 오류가 발생했습니다.</div>';
+    } finally {
       isLoading = false;
-    });
+    }
   }
 
   // Load more data when scrolling
-  function loadMoreData() {
-    if (isLoading || !lastCursorId) return;
+  async function loadMoreData() {
+    if (isLoading || !hasMoreData) return;
 
     isLoading = true;
-    const loadingIndicator = document.createElement('div');
-    loadingIndicator.className = 'loading-more';
-    loadingIndicator.innerText = 'Loading more...';
-    document.getElementById('groupPurchaseList').appendChild(loadingIndicator);
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    loadingIndicator.style.display = 'block';
 
-    fetchGroupPurchases(lastCursorId, currentStatus, pageSize)
-    .then(data => {
-      // Remove loading indicator
-      document.querySelector('.loading-more').remove();
+    try {
+      const data = await fetchGroupPurchases(lastCursorId, currentStatus, pageSize);
 
       if (data.length > 0) {
         const list = document.getElementById('groupPurchaseList');
@@ -138,34 +147,63 @@
 
         // Update the cursor for next pagination
         lastCursorId = data[data.length - 1].id;
+
+        // 가져온 데이터가 pageSize보다 적으면 더 이상 데이터가 없는 것
+        hasMoreData = data.length >= pageSize;
+        console.log('More data loaded, hasMoreData:', hasMoreData);
+      } else {
+        hasMoreData = false;
+        console.log('No more data available');
       }
+    } catch (error) {
+      console.error('Failed to load more data:', error);
+    } finally {
       isLoading = false;
-    });
+      loadingIndicator.style.display = 'none';
+    }
   }
 
   // Filter by status
   function filterStatus(status) {
     document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('selected'));
-    if (status === 'ALL') document.querySelector('.filter-btn[data-status="ALL"]').classList.add('selected');
-    if (status === 'OPEN') document.querySelector('.filter-btn[data-status="OPEN"]').classList.add('selected');
-    if (status === 'DONE') document.querySelector('.filter-btn[data-status="DONE"]').classList.add('selected');
+    document.querySelector(`.filter-btn[data-status="${status}"]`).classList.add('selected');
 
     loadInitialData(status);
   }
 
+  // Throttle function to limit how often a function can be called
+  function throttle(callback, delay = 300) {
+    let isThrottled = false;
+
+    return function() {
+      if (isThrottled) return;
+
+      isThrottled = true;
+      callback.apply(this, arguments);
+
+      setTimeout(() => {
+        isThrottled = false;
+      }, delay);
+    };
+  }
 
   // Initialize on page load
   document.addEventListener('DOMContentLoaded', () => {
     loadInitialData();
 
-    // Add scroll event listener for infinite scrolling
-    window.addEventListener('scroll', () => {
-      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 300) {
+    // Add scroll event listener for infinite scrolling with throttling
+    window.addEventListener('scroll', throttle(() => {
+      const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+
+      // 스크롤이 문서 하단에 가까워지면 추가 데이터 로드
+      if (scrollTop + windowHeight >= documentHeight - 200) {
+        console.log('Near bottom of page, loading more data...');
         loadMoreData();
       }
-    });
+    }, 200));
   });
-
 </script>
 
 </body>
