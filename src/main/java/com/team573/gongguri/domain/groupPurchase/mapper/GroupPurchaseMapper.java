@@ -38,7 +38,9 @@ public class GroupPurchaseMapper {
                 entity.getAccount(),
                 entity.getProgressStatus().toString(),
                 entity.getImageUrl(),
-                false // isParticipated 기본값
+                false, // isParticipated 기본값
+                entity.getMember().getEmail(),       // 👈 추가
+                entity.getMember().getNickname()
         );
     }
 
@@ -54,7 +56,9 @@ public class GroupPurchaseMapper {
                 entity.getAccount(),
                 entity.getProgressStatus().toString(),
                 entity.getImageUrl(),
-                isParticipated
+                isParticipated,
+                entity.getMember().getEmail(),
+                entity.getMember().getNickname()
         );
     }
 

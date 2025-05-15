@@ -53,6 +53,9 @@ import lombok.Setter;
     @Column(nullable = false)
     private String account;
 
+    @Column(name = "is_deleted", nullable = false)
+    private boolean isDeleted = false;
+
     @Setter
     @Column(nullable = true)
     private String imageUrl;
@@ -101,6 +104,10 @@ import lombok.Setter;
         this.bank = bank;
         this.account = account;
         this.progressStatus = progressStatus;
+    }
+
+    public void markAsDeleted() {
+        this.isDeleted = true;
     }
 
     public void setImageUrl(String imageUrl) {

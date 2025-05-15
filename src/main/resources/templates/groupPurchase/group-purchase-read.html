@@ -15,9 +15,22 @@
 
         <main class="container">
 
-            <!-- ✅ 제목 + 진행 상태 + 가격 -->
+            <!-- ✅ 제목 + 점세개 메뉴를 한 줄로 묶기 -->
             <div class="purchase-header">
-                <h2 id="groupTitle" class="title">제목</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2 id="groupTitle" class="title">제목</h2>
+
+                    <!-- 점세개 메뉴 -->
+                    <div id="menu-wrapper" class="menu-wrapper">
+                        <button id="menu-button" class="menu-button">⋮</button>
+                        <div id="menu-dropdown" class="menu-dropdown">
+                            <button onclick="editPost()">수정하기</button>
+                            <button onclick="deletePost()">삭제하기</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 상태/가격 -->
                 <div class="meta-info">
                     <span id="groupStatus" class="badge">진행중</span>
                     <span class="price">
@@ -61,25 +74,64 @@
 <script>
     document.addEventListener("DOMContentLoaded", async () => {
         const groupId = [[${groupId}]];
+        const currentUserEmail = '[[${#authentication.principal.username}]]';
+
         try {
             const res = await fetch(`/api/group-purchases/${groupId}`);
-            if (!res.ok) throw new Error("불러오기 실패");
             const data = await res.json();
 
             document.getElementById("groupTitle").innerText = data.title;
-            document.getElementById("groupStatus").innerText =
-                data.progressStatus === "RECRUITING" ? "진행중" : "완료";
+            document.getElementById("groupStatus").innerText = data.progressStatus === "RECRUITING" ? "진행중" : "완료";
             document.getElementById("groupPrice").innerText = `₩${data.price.toLocaleString()}`;
             document.getElementById("writerNickname").innerText = data.writerNickname ?? "작성자";
             document.getElementById("groupContent").innerText = data.content;
             document.getElementById("memberCount").innerText = `${data.currentParticipants}/${data.maxParticipants}`;
-            if (data.imageUrl) {
-                document.getElementById("productImage").src = data.imageUrl;
+            if (data.imageUrl) document.getElementById("productImage").src = data.imageUrl;
+
+            // 👇 작성자일 경우에만 메뉴 보이기
+            console.log("작성자 이메일:", data.writerEmail);
+            console.log("현재 로그인 사용자:", currentUserEmail);
+            if (data.writerEmail === currentUserEmail) {
+                console.log("✅ 작성자 일치 → 메뉴 보여줌");
+                document.getElementById("menu-wrapper").style.display = "inline-block";
             }
+
         } catch (err) {
             alert("상세 정보를 불러오지 못했습니다.");
         }
     });
+
+    document.addEventListener("click", (e) => {
+        const menuButton = document.getElementById("menu-button");
+        const menuDropdown = document.getElementById("menu-dropdown");
+
+        if (menuButton.contains(e.target)) {
+            menuDropdown.style.display = menuDropdown.style.display === "block" ? "none" : "block";
+        } else {
+            menuDropdown.style.display = "none";
+        }
+    });
+
+    function editPost() {
+        const groupId = [[${groupId}]];
+        location.href = `/group-purchase/${groupId}/edit`;
+    }
+
+    function deletePost() {
+        const groupId = [[${groupId}]];
+        if (confirm("정말 삭제하시겠습니까?")) {
+            fetch(`/api/group-purchases/${groupId}`, {
+                method: "DELETE"
+            }).then(res => {
+                if (res.ok) {
+                    alert("삭제 완료");
+                    window.location.href = "/group-purchase";
+                } else {
+                    alert("삭제 실패");
+                }
+            });
+        }
+    }
 
     document.addEventListener("DOMContentLoaded", async () => {
         const groupId = [[${groupId}]];
@@ -129,7 +181,6 @@
             alert("참여에 실패했습니다.");
         }
     });
-
 </script>
 </body>
 </html>

@@ -65,7 +65,7 @@ public class GroupPurchaseService {
     public GroupPurchaseResponseDto get(Long id, String email) {
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_MEMBER));
-        GroupPurchase entity = groupPurchaseRepository.findById(id)
+        GroupPurchase entity = groupPurchaseRepository.findByGroupIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_GROUP_PURCHASE));
         int currentParticipants = participantRepository.countByGroupPurchase_GroupId(id);
         boolean isParticipated = participantRepository.existsByGroupPurchase_GroupIdAndMember_Email(id, email);
@@ -76,7 +76,7 @@ public class GroupPurchaseService {
     public List<GroupPurchaseResponseDto> getAll(String email) {
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_MEMBER));
-        return groupPurchaseRepository.findAll().stream()
+        return groupPurchaseRepository.findAllActive().stream()
                 .map(entity -> {
                     int currentParticipants = participantRepository.countByGroupPurchase_GroupId(entity.getGroupId());
                     boolean isParticipated = participantRepository.existsByGroupPurchase_GroupIdAndMember_Email(entity.getGroupId(), email);
@@ -88,7 +88,7 @@ public class GroupPurchaseService {
     @Transactional
     public GroupPurchaseResponseDto update(Long id, GroupPurchaseRequestDto dto) {
         try {
-            GroupPurchase entity = groupPurchaseRepository.findById(id)
+            GroupPurchase entity = groupPurchaseRepository.findByGroupIdAndIsDeletedFalse(id)
                     .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_GROUP_PURCHASE));
 
             entity.update(
@@ -110,9 +110,9 @@ public class GroupPurchaseService {
 
     @Transactional
     public void delete(Long id) {
-        GroupPurchase entity = groupPurchaseRepository.findById(id)
+        GroupPurchase entity = groupPurchaseRepository.findByGroupIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_GROUP_PURCHASE));
-        groupPurchaseRepository.delete(entity);
+        entity.markAsDeleted();
     }
 
     @Transactional
@@ -120,7 +120,7 @@ public class GroupPurchaseService {
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_MEMBER));
 
-        GroupPurchase groupPurchase = groupPurchaseRepository.findById(groupId)
+        GroupPurchase groupPurchase = groupPurchaseRepository.findByGroupIdAndIsDeletedFalse(groupId)
                 .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_GROUP_PURCHASE));
 
         int currentCount = participantRepository.countByGroupPurchase_GroupId(groupId);
