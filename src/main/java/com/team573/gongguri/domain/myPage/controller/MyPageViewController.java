@@ -21,7 +21,7 @@ public class MyPageViewController {
     }
 
     @GetMapping("/purchase")
-    public String showLoginForm() {
+    public String showMyPurchaseForm() {
         return "/my-page/purchase";
     }
 
