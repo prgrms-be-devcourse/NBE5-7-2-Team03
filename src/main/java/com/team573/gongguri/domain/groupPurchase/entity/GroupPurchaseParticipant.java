@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -34,4 +35,11 @@ public class GroupPurchaseParticipant extends BaseEntity {
 
     @Column(nullable = false)
     private Enum<ParticipationStatus> participationStatus;
+
+    @Builder
+    public GroupPurchaseParticipant(GroupPurchase groupPurchase, Member member, ParticipationStatus participationStatus) {
+        this.groupPurchase = groupPurchase;
+        this.member = member;
+        this.participationStatus = participationStatus;
+    }
 }

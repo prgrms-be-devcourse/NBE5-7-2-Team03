@@ -29,10 +29,10 @@ spring:
         dialect: org.hibernate.dialect.MySQL8Dialect
         format_sql: true
         show_sql: true
-        
+
   web:
     resources:
       static-locations: file:${user.home}/gongguri-uploads/, classpath:/static/
-      
+
   mvc:
     static-path-pattern: /**
