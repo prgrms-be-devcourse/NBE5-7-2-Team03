@@ -30,7 +30,7 @@ public class ChatViewController {
         return chatService.addChatMessage(roomId, requestDto);
     }
 
-    @GetMapping("/groupPurchase/{groupPurchaseId}/chat")
+    @GetMapping("/group-purchase/{groupPurchaseId}/chat")
     public String groupPurchaseChat(
         @PathVariable Long groupPurchaseId,
         Model model,
