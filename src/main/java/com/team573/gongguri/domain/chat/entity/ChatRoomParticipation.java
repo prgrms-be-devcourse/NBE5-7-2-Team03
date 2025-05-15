@@ -19,6 +19,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Table(name = "chat_room_participation")
 public class ChatRoomParticipation extends BaseEntity {
+  
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long chatRoomParticipantId;
@@ -35,6 +36,7 @@ public class ChatRoomParticipation extends BaseEntity {
     public ChatRoomParticipation(Member member, ChatRoom chatRoom) {
         this.member = member;
         this.chatRoom = chatRoom;
+
     }
 }
 
