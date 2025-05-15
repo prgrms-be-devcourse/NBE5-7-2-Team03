@@ -21,6 +21,7 @@ public class GroupPurchaseMapper {
                 .bank(dto.bank())
                 .account(dto.account())
                 .progressStatus(ProgressStatus.RECRUITING)
+                .imageUrl(dto.imageUrl()) // 추가!
                 .build(); // imageUrl은 add/update 시 service에서 set
     }
 

@@ -1,6 +1,7 @@
 package com.team573.gongguri.domain.groupPurchase.service;
 
 import com.team573.gongguri.domain.chat.entity.ChatRoom;
+import com.team573.gongguri.domain.chat.repository.ChatRoomRepository;
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseRequestDto;
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseResponseDto;
 import com.team573.gongguri.domain.groupPurchase.entity.GroupPurchase;
@@ -9,6 +10,7 @@ import com.team573.gongguri.domain.groupPurchase.mapper.GroupPurchaseMapper;
 import com.team573.gongguri.domain.groupPurchase.repository.GroupPurchaseRepository;
 import com.team573.gongguri.domain.member.entity.Member;
 import com.team573.gongguri.domain.member.entity.Univ;
+import com.team573.gongguri.domain.member.repository.MemberRepository;
 import com.team573.gongguri.global.exception.ErrorCode;
 import com.team573.gongguri.global.exception.ErrorException;
 import lombok.RequiredArgsConstructor;
@@ -22,13 +24,22 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class GroupPurchaseService {
     private final GroupPurchaseRepository repository;
+    private final MemberRepository memberRepository;
+    private final ChatRoomRepository chatRoomRepository;
 
     @Transactional
-    public GroupPurchaseResponseDto add(GroupPurchaseRequestDto dto, Member writer, ChatRoom chatRoom, Univ univ) {
-        try {
-            GroupPurchase entity = GroupPurchaseMapper.toEntity(dto, writer, chatRoom, univ);
-            entity.setImageUrl(dto.imageUrl()); // 이미지 URL 직접 설정
+    public GroupPurchaseResponseDto add(GroupPurchaseRequestDto dto) {
+        Member writer = memberRepository.findById(1L)  // 로그인 연동 전 테스트용 고정 ID
+                .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_MEMBER));
 
+        Univ univ = writer.getUniv();
+
+        ChatRoom chatRoom = chatRoomRepository.findById(1L)
+                .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_CHATROOM));
+
+        try {
+
+            GroupPurchase entity = GroupPurchaseMapper.toEntity(dto, writer, chatRoom, univ);
             repository.save(entity);
             return GroupPurchaseMapper.toDto(entity);
         } catch (Exception e) {

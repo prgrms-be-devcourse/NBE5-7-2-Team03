@@ -68,7 +68,8 @@ import lombok.Setter;
             int price,
             int maxParticipants,
             String bank,
-            String account
+            String account,
+            String imageUrl
     ) {
         this.member = member;
         this.univ = univ;
@@ -80,6 +81,7 @@ import lombok.Setter;
         this.maxParticipants = maxParticipants;
         this.bank = bank;
         this.account = account;
+        this.imageUrl = imageUrl;
     }
 
 
