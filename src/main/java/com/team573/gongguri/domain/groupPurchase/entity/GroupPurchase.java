@@ -3,6 +3,8 @@ package com.team573.gongguri.domain.groupPurchase.entity;
 import com.team573.gongguri.domain.chat.entity.ChatRoom;
 import com.team573.gongguri.domain.member.entity.Member;
 import com.team573.gongguri.domain.member.entity.Univ;
+
+import lombok.Builder;
 import com.team573.gongguri.global.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -15,6 +17,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 
 @Entity
@@ -38,8 +41,9 @@ public class GroupPurchase extends BaseEntity {
     @JoinColumn(name = "chat_room_id", nullable = false)
     private ChatRoom chatRoom;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Enum<ProgressStatus> progressStatus;
+    private ProgressStatus progressStatus;
 
     @Column(nullable = false)
     private String title;
@@ -58,4 +62,59 @@ public class GroupPurchase extends BaseEntity {
 
     @Column(nullable = false)
     private String account;
+
+    @Setter
+    @Column(nullable = true)
+    private String imageUrl;
+
+    @Builder
+    public GroupPurchase(
+            Member member,
+            Univ univ,
+            ChatRoom chatRoom,
+            ProgressStatus progressStatus,
+            String title,
+            String content,
+            int price,
+            int maxParticipants,
+            String bank,
+            String account,
+            String imageUrl
+    ) {
+        this.member = member;
+        this.univ = univ;
+        this.chatRoom = chatRoom;
+        this.progressStatus = progressStatus;
+        this.title = title;
+        this.content = content;
+        this.price = price;
+        this.maxParticipants = maxParticipants;
+        this.bank = bank;
+        this.account = account;
+        this.imageUrl = imageUrl;
+    }
+
+
+    public void update(
+            String title,
+            String content,
+            int price,
+            int maxParticipants,
+            String bank,
+            String account,
+            ProgressStatus progressStatus
+            )
+    {
+        this.title = title;
+        this.content = content;
+        this.price = price;
+        this.maxParticipants = maxParticipants;
+        this.bank = bank;
+        this.account = account;
+        this.progressStatus = progressStatus;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
 }
