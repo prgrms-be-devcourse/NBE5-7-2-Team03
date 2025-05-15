@@ -61,6 +61,8 @@
   let currentStatus = 'ALL';
   const pageSize = 10;
   let isLoading = false;
+  let isLast = false;
+
 
   // Fetch data from API
   function fetchGroupPurchases(cursorId = null, status = 'ALL', size = 10) {
@@ -89,7 +91,7 @@
 
   // Load initial data
   function loadInitialData(status = 'ALL') {
-    if (isLoading) return;
+    if (isLoading || isLast) return;
 
     isLoading = true;
     const list = document.getElementById('groupPurchaseList');
@@ -106,8 +108,9 @@
 
         // Update the cursor for pagination
         lastCursorId = data[data.length - 1].id;
-      } else {
-        list.innerHTML = '<div class="no-results">No group purchases found</div>';
+        if (data.length === pageSize) {
+          isLast = true;
+        }
       }
       isLoading = false;
     });
@@ -150,10 +153,6 @@
     loadInitialData(status);
   }
 
-  // Navigate to add page
-  function goToAdd() {
-    window.location.href = "/groupPurchase/post";
-  }
 
   // Initialize on page load
   document.addEventListener('DOMContentLoaded', () => {
