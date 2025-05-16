@@ -159,7 +159,7 @@
             });
 
             if (res.ok) {
-                window.location.href = "/groupPurchase";
+                window.location.href = "/group-purchase";
             } else {
                 const errorText = await res.text();
                 alert("등록 실패: " + errorText);

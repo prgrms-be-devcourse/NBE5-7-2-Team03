@@ -23,22 +23,28 @@ public class GroupPurchaseMapper {
                 .maxParticipants(dto.maxParticipants())
                 .bank(dto.bank())
                 .account(dto.account())
-                .progressStatus(ProgressStatus.RECRUITING)
                 .imageUrl(dto.imageUrl()) // 추가!
-                .build(); // imageUrl은 add/update 시 service에서 set
+                .progressStatus(ProgressStatus.RECRUITING)
+                .build();
     }
 
     public static GroupPurchaseResponseDto toDto(GroupPurchase entity) {
+        return toDto(entity, 0, false);
+    }
+
+    public static GroupPurchaseResponseDto toDto(GroupPurchase entity, int currentParticipants, boolean isParticipated) {
         return new GroupPurchaseResponseDto(
                 entity.getGroupId(),
                 entity.getTitle(),
                 entity.getContent(),
                 entity.getPrice(),
                 entity.getMaxParticipants(),
+                currentParticipants,
                 entity.getBank(),
                 entity.getAccount(),
                 entity.getProgressStatus().toString(),
-                entity.getImageUrl()
+                entity.getImageUrl(),
+                isParticipated
         );
     }
 
