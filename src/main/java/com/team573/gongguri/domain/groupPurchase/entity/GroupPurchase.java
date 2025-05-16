@@ -3,6 +3,7 @@ package com.team573.gongguri.domain.groupPurchase.entity;
 import com.team573.gongguri.domain.chat.entity.ChatRoom;
 import com.team573.gongguri.domain.member.entity.Member;
 import com.team573.gongguri.domain.member.entity.Univ;
+import com.team573.gongguri.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,7 +15,7 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor
 @Table(name = "group_purchase")
-    public class GroupPurchase {
+    public class GroupPurchase extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long groupId;

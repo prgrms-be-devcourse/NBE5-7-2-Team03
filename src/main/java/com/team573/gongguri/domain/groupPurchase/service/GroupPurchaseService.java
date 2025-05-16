@@ -9,6 +9,7 @@ import com.team573.gongguri.domain.groupPurchase.entity.GroupPurchaseParticipant
 import com.team573.gongguri.domain.groupPurchase.entity.ParticipationStatus;
 import com.team573.gongguri.domain.groupPurchase.entity.ProgressStatus;
 import com.team573.gongguri.domain.groupPurchase.mapper.GroupPurchaseMapper;
+import com.team573.gongguri.domain.groupPurchase.mapper.GroupPurchaseParticipantMapper;
 import com.team573.gongguri.domain.groupPurchase.repository.GroupPurchaseParticipantRepository;
 import com.team573.gongguri.domain.groupPurchase.repository.GroupPurchaseRepository;
 import com.team573.gongguri.domain.member.entity.Member;
@@ -39,26 +40,36 @@ public class GroupPurchaseService {
                 .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_MEMBER));
 
         Univ univ = writer.getUniv();
-        ChatRoom chatRoom = chatService.addChatRoom(email);
-
+        ChatRoom chatRoom;
         try {
-            GroupPurchase entity = GroupPurchaseMapper.toEntity(dto, writer, chatRoom, univ);
-            entity.setImageUrl(dto.imageUrl());
-            groupPurchaseRepository.save(entity);
-
-            GroupPurchaseParticipant participant = GroupPurchaseParticipant.builder()
-                    .groupPurchase(entity)
-                    .member(writer)
-                    .participationStatus(ParticipationStatus.JOINED)
-                    .build();
-            participantRepository.save(participant);
-
-            int currentParticipants = participantRepository.countByGroupPurchase_GroupId(entity.getGroupId());
-            boolean isParticipated = true;
-            return GroupPurchaseMapper.toDto(entity, currentParticipants, isParticipated);
+            chatRoom = chatService.addChatRoom(email);
         } catch (Exception e) {
+            log.error("채팅방 생성 실패", e);
             throw new ErrorException(ErrorCode.CREATE_FAILED_GROUP_PURCHASE);
         }
+
+        GroupPurchase groupPurchase;
+        try {
+            groupPurchase = GroupPurchaseMapper.toEntity(dto, writer, chatRoom, univ);
+            groupPurchase.setImageUrl(dto.imageUrl());
+            groupPurchaseRepository.save(groupPurchase);
+        } catch (Exception e) {
+            log.error("공동구매 게시글 저장 실패", e);
+            throw new ErrorException(ErrorCode.CREATE_FAILED_GROUP_PURCHASE);
+        }
+
+        try {
+            GroupPurchaseParticipant participant = GroupPurchaseParticipantMapper.toEntity(groupPurchase, writer);
+            participantRepository.save(participant);
+        } catch (Exception e) {
+            log.error("작성자를 참여자로 등록 실패", e);
+            throw new ErrorException(ErrorCode.JOIN_FAILED);
+        }
+
+        int currentParticipants = participantRepository.countByGroupPurchase_GroupId(groupPurchase.getGroupId());
+        boolean isParticipated = true;
+
+        return GroupPurchaseMapper.toDto(groupPurchase, currentParticipants, isParticipated);
     }
 
     @Transactional(readOnly = true)
@@ -87,10 +98,10 @@ public class GroupPurchaseService {
 
     @Transactional
     public GroupPurchaseResponseDto update(Long id, GroupPurchaseRequestDto dto) {
-        try {
-            GroupPurchase entity = groupPurchaseRepository.findById(id)
-                    .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_GROUP_PURCHASE));
 
+        GroupPurchase entity = groupPurchaseRepository.findById(id)
+                .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_GROUP_PURCHASE));
+        try {
             entity.update(
                     dto.title(),
                     dto.content(),
@@ -101,11 +112,11 @@ public class GroupPurchaseService {
                     ProgressStatus.valueOf(dto.progressStatus().toUpperCase())
             );
             entity.setImageUrl(dto.imageUrl());
-
-            return GroupPurchaseMapper.toDto(entity);
         } catch (Exception e) {
+            log.error("공동구매 수정 실패", e);
             throw new ErrorException(ErrorCode.UPDATE_FAILED_GROUP_PURCHASE);
         }
+        return GroupPurchaseMapper.toDto(entity);
     }
 
     @Transactional
@@ -133,14 +144,14 @@ public class GroupPurchaseService {
             throw new ErrorException(ErrorCode.ALREADY_JOINED);
         }
 
-        GroupPurchaseParticipant participant = GroupPurchaseParticipant.builder()
-                .groupPurchase(groupPurchase)
-                .member(member)
-                .participationStatus(ParticipationStatus.JOINED)
-                .build();
-
-        participantRepository.save(participant);
-        chatService.addChatParticipation(groupPurchase.getChatRoom().getChatRoomId(), email);
+        try {
+            GroupPurchaseParticipant participant = GroupPurchaseParticipantMapper.toEntity(groupPurchase, member);
+            participantRepository.save(participant);
+            chatService.addChatParticipation(groupPurchase.getChatRoom().getChatRoomId(), email);
+        } catch (Exception e) {
+            log.error("참여자 등록 실패", e);
+            throw new ErrorException(ErrorCode.JOIN_FAILED);
+        }
 
         int afterJoinCount = currentCount + 1;
         if (afterJoinCount >= groupPurchase.getMaxParticipants()) {
