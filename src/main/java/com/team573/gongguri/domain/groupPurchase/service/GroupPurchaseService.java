@@ -4,26 +4,28 @@ import com.team573.gongguri.domain.chat.entity.ChatRoom;
 import com.team573.gongguri.domain.chat.service.ChatService;
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseRequestDto;
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseResponseDto;
+import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseWithChatResponseDto;
+import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseWithParticipantCountDto;
 import com.team573.gongguri.domain.groupPurchase.entity.GroupPurchase;
 import com.team573.gongguri.domain.groupPurchase.entity.GroupPurchaseParticipant;
-import com.team573.gongguri.domain.groupPurchase.entity.ParticipationStatus;
 import com.team573.gongguri.domain.groupPurchase.entity.ProgressStatus;
 import com.team573.gongguri.domain.groupPurchase.mapper.GroupPurchaseMapper;
 import com.team573.gongguri.domain.groupPurchase.mapper.GroupPurchaseParticipantMapper;
 import com.team573.gongguri.domain.groupPurchase.repository.GroupPurchaseParticipantRepository;
+import com.team573.gongguri.domain.groupPurchase.repository.GroupPurchaseJpqlRepository;
 import com.team573.gongguri.domain.groupPurchase.repository.GroupPurchaseRepository;
 import com.team573.gongguri.domain.member.entity.Member;
 import com.team573.gongguri.domain.member.entity.Univ;
 import com.team573.gongguri.domain.member.repository.MemberRepository;
 import com.team573.gongguri.global.exception.ErrorCode;
 import com.team573.gongguri.global.exception.ErrorException;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -33,6 +35,7 @@ public class GroupPurchaseService {
     private final GroupPurchaseParticipantRepository participantRepository;
     private final MemberRepository memberRepository;
     private final ChatService chatService;
+    private final GroupPurchaseJpqlRepository groupPurchaseJpqlRepository;
 
     @Transactional
     public GroupPurchaseResponseDto add(GroupPurchaseRequestDto dto, String email) {
@@ -157,5 +160,29 @@ public class GroupPurchaseService {
         if (afterJoinCount >= groupPurchase.getMaxParticipants()) {
             groupPurchase.setProgressStatus(ProgressStatus.CLOSED);
         }
+    }
+
+    public List<GroupPurchaseWithChatResponseDto> getWithMessage(
+        Integer size,
+        Long cursorId,
+        List<ProgressStatus> statuses,
+        Long memberId
+    ) {
+        // 공동 구매 조회
+        List<GroupPurchaseWithParticipantCountDto> groupPurchases
+            = groupPurchaseJpqlRepository.findWithCursorAndParticipantCount(cursorId, memberId, statuses, size);
+
+        // 조회한 공동 구매 채팅 메시지 조회
+        List<Long> chatRoomIds = groupPurchases.stream()
+            .map(GroupPurchaseWithParticipantCountDto::chatRoomId)
+            .toList();
+
+        // 맵으로 채팅 메시지 가져오기
+        Map<Long, String> firstMessages = chatService.getFirstMessageMap(chatRoomIds);
+
+        return groupPurchases.stream()
+            .map(groupPurchase -> GroupPurchaseMapper.toWithMessageResponseDto(groupPurchase,
+                firstMessages))
+            .toList();
     }
 }
