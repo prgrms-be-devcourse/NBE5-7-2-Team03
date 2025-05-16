@@ -8,8 +8,10 @@ public record GroupPurchaseResponseDto(
         String content,
         int price,
         int maxParticipants,
+        int currentParticipants,
         String bank,
         String account,
         String progressStatus,
-        String imageUrl
+        String imageUrl,
+        boolean isParticipated
 ) {}
