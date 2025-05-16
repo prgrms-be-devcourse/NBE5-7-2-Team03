@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
-@RequestMapping("/groupPurchase")
+@RequestMapping("/group-purchase")
 public class GroupPurchaseViewController {
 
     // 공동구매 목록 페이지

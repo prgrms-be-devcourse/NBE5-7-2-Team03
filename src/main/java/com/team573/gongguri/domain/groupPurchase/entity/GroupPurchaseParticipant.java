@@ -3,6 +3,7 @@ package com.team573.gongguri.domain.groupPurchase.entity;
 import com.team573.gongguri.domain.member.entity.Member;
 import com.team573.gongguri.global.entity.BaseEntity;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -27,4 +28,11 @@ public class GroupPurchaseParticipant extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ParticipationStatus participationStatus;
+
+    @Builder
+    public GroupPurchaseParticipant(GroupPurchase groupPurchase, Member member, ParticipationStatus participationStatus) {
+        this.groupPurchase = groupPurchase;
+        this.member = member;
+        this.participationStatus = participationStatus;
+    }
 }
