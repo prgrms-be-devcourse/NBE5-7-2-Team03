@@ -101,13 +101,15 @@ public class GroupPurchaseService {
         }
     }
 
-    public List<GroupPurchaseWithChatResponseDto> getWithMessage(Integer size, Long cursorId,
-        String status) {
-        ProgressStatus progress = status == null ? null : ProgressStatus.valueOf(status.toUpperCase());
-
+    public List<GroupPurchaseWithChatResponseDto> getWithMessage(
+        Integer size,
+        Long cursorId,
+        List<ProgressStatus> statuses,
+        Long memberId
+    ) {
         // 공동 구매 조회
         List<GroupPurchaseWithParticipantCountDto> groupPurchases
-            = groupPurchaseJpqlRepository.findWithCursorAndParticipantCount(cursorId, progress, size);
+            = groupPurchaseJpqlRepository.findWithCursorAndParticipantCount(cursorId, memberId, statuses, size);
 
         // 조회한 공동 구매 채팅 메시지 조회
         List<Long> chatRoomIds = groupPurchases.stream()
