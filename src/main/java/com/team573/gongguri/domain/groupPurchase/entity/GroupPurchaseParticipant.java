@@ -27,4 +27,14 @@ public class GroupPurchaseParticipant extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ParticipationStatus participationStatus;
+
+    private Boolean deposit = false;
+
+    public void confirmDeposit() {
+        this.deposit = true;
+    }
+
+    public void cancelDeposit() {
+        this.deposit = false;
+    }
 }
