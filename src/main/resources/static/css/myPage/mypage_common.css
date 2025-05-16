@@ -1,0 +1,70 @@
+/* mypage_common.css */
+.profile-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    cursor: pointer;
+    background-color: var(--muted);
+    border-radius: var(--radius);
+    margin-top: 1rem; /* 탑바와의 간격 */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.profile-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.profile-img {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    background-color: var(--border);
+}
+
+.nickname {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--foreground);
+}
+
+.profile-right .arrow {
+    font-size: 1.5rem;
+    color: var(--primary);
+    font-weight: 800;
+}
+
+/* 메뉴 리스트는 그림자 없이, 리스트 느낌 */
+.menu-list {
+    list-style: none;
+    margin-top: 2rem;
+    padding: 0;
+}
+
+.menu-item {
+    padding: 1rem;
+    border-top: 1px solid var(--border);
+    background-color: var(--background);
+    font-size: 1rem;
+    color: var(--foreground);
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.menu-item:last-child {
+    border-bottom: 1px solid var(--border);
+}
+
+.menu-item:hover {
+    background-color: var(--muted-light);
+}
+
+.menu-item.logout {
+    color: #ef4444; /* 빨간 로그아웃 텍스트 */
+}
+.arrow-icon {
+    color: var(--primary);
+}
