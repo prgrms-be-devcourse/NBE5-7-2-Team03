@@ -34,4 +34,10 @@ public class GroupPurchaseViewController {
     public String showChats() {
         return "groupPurchase/group-purchase-chats";
     }
+
+    @GetMapping("/{groupPurchaseId}/participants")
+    public String manageParticipants(@PathVariable Long groupPurchaseId, Model model) {
+        model.addAttribute("groupPurchaseId", groupPurchaseId);
+        return "groupPurchase/participants-manage";
+    }
 }

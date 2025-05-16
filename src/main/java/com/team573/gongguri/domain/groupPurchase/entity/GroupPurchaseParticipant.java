@@ -35,8 +35,8 @@ public class GroupPurchaseParticipant extends BaseEntity {
         this.deposit = true;
     }
 
-    public void cancelDeposit() {
-        this.deposit = false;
+    public void cancelMember() {
+        this.participationStatus = ParticipationStatus.CANCELLED;
     }
 
     @Builder

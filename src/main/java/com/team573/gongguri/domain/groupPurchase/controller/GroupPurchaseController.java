@@ -4,20 +4,20 @@ import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseRequestDto;
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseResponseDto;
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseWithChatResponseDto;
 import com.team573.gongguri.domain.groupPurchase.entity.ProgressStatus;
+import com.team573.gongguri.domain.groupPurchase.service.GroupPurchaseParticipantService;
 import com.team573.gongguri.domain.groupPurchase.service.GroupPurchaseService;
 import com.team573.gongguri.global.security.CustomUserDetails;
 import java.util.ArrayList;
 import java.util.List;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class GroupPurchaseController {
     private final GroupPurchaseService service;
     private final GroupPurchaseService groupPurchaseService;
+    private final GroupPurchaseParticipantService groupPurchaseParticipantService;
 
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -108,6 +109,26 @@ public class GroupPurchaseController {
         List<GroupPurchaseWithChatResponseDto> withMessages
                 = groupPurchaseService.getWithMessage(size, cursorGroupPurchaseId, progressStatuses, customUserDetails.getMemberId());
         return ResponseEntity.ok(withMessages);
+    }
+
+    @PatchMapping("/{groupPurchaseId}/participants/{participantsId}/confirm")
+    public ResponseEntity<Void> confirmDeposit(
+        @PathVariable Long groupPurchaseId,
+        @PathVariable Long participantsId,
+        @AuthenticationPrincipal CustomUserDetails customUserDetails
+    ) {
+        groupPurchaseParticipantService.confirmDeposit(groupPurchaseId, participantsId, customUserDetails.getMemberId());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{groupPurchaseId}/participants/{participantsId}/cancel")
+    public ResponseEntity<Void> cancelParticipantStatus(
+        @PathVariable Long groupPurchaseId,
+        @PathVariable Long participantsId,
+        @AuthenticationPrincipal CustomUserDetails customUserDetails
+    ) {
+        groupPurchaseParticipantService.cancelParticipation(groupPurchaseId, participantsId, customUserDetails.getMemberId());
+        return ResponseEntity.noContent().build();
     }
 }
 

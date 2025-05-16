@@ -10,4 +10,5 @@ public interface GroupPurchaseRepository extends JpaRepository<GroupPurchase, Lo
 
     List<GroupPurchase> findByMember_MemberId(Long memberId);
 
+    Boolean existsByGroupIdAndMember_MemberId(Long groupId, Long memberId);
 }
