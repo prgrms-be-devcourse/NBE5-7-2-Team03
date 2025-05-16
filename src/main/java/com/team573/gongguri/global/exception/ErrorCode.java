@@ -40,6 +40,7 @@ public enum ErrorCode {
     // CHAT
     NOT_FOUND_CHATROOM(NOT_FOUND, "CHAT-001", "존재하지 않는 채팅방입니다."),
     NOT_PARTICIPATING(FORBIDDEN, "CHAT-002", "채팅방에 참여하고 있지 않습니다."),
+    CREATE_FAILED_CHATROOM(CONFLICT, "CHAT-003", " 생성에 실패했습니다."),
 
     //UNIV
     NOT_FOUND_UNIV(NOT_FOUND, "UNIV-001", "해당 대학교 정보가 존재하지 않습니다.");

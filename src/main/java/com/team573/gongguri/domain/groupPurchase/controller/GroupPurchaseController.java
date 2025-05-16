@@ -2,24 +2,37 @@ package com.team573.gongguri.domain.groupPurchase.controller;
 
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseRequestDto;
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseResponseDto;
+import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseWithChatResponseDto;
+import com.team573.gongguri.domain.groupPurchase.entity.ProgressStatus;
 import com.team573.gongguri.domain.groupPurchase.service.GroupPurchaseService;
 import com.team573.gongguri.global.security.CustomUserDetails;
+import java.util.ArrayList;
+import java.util.List;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 
 @RestController
 @RequestMapping("/api/group-purchases")
 @RequiredArgsConstructor
 @Slf4j
 public class GroupPurchaseController {
-    private final GroupPurchaseService service;
+    private final GroupPurchaseService groupPurchaseService;
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GroupPurchaseResponseDto> add(
@@ -28,7 +41,7 @@ public class GroupPurchaseController {
 
         log.info("[GroupPurchaseController] JSON 방식 게시글 작성 요청 수신");
         String email = customUserDetails.getUsername();
-        GroupPurchaseResponseDto createdDto = service.add(dto, email);
+        GroupPurchaseResponseDto createdDto = groupPurchaseService.add(dto, email);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdDto);
     }
 
@@ -37,14 +50,14 @@ public class GroupPurchaseController {
             @PathVariable Long id,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         String email = userDetails.getUsername();
-        return ResponseEntity.ok(service.get(id, email));
+        return ResponseEntity.ok(groupPurchaseService.get(id, email));
     }
 
     @GetMapping
     public ResponseEntity<List<GroupPurchaseResponseDto>> getAll(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         String email = userDetails.getUsername();
-        return ResponseEntity.ok(service.getAll(email));
+        return ResponseEntity.ok(groupPurchaseService.getAll(email));
     }
 
     @PutMapping("/{id}")
@@ -52,12 +65,12 @@ public class GroupPurchaseController {
             @PathVariable Long id,
             @RequestBody GroupPurchaseRequestDto dto
     ) {
-        return ResponseEntity.ok(service.update(id, dto));
+        return ResponseEntity.ok(groupPurchaseService.update(id, dto));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        service.delete(id);
+        groupPurchaseService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
@@ -67,9 +80,31 @@ public class GroupPurchaseController {
             @AuthenticationPrincipal CustomUserDetails customUserDetails
     ) {
         String email = customUserDetails.getUsername();
-        service.join(id, email);
+        groupPurchaseService.join(id, email);
         log.info("member joined: {}", email);
         return ResponseEntity.noContent().build();
     }
-}
 
+    @GetMapping("/chat")
+    public ResponseEntity<List<GroupPurchaseWithChatResponseDto>> getWithChat(
+            @RequestParam(required = false, name = "cursor") Long cursorGroupPurchaseId,
+            @RequestParam(required = false) String progressStatus,
+            @RequestParam(defaultValue = "10") int size,
+            @AuthenticationPrincipal CustomUserDetails customUserDetails
+    ) {
+        List<ProgressStatus> progressStatuses = new ArrayList<>();
+
+        if (progressStatus != null) {
+            if (progressStatus.equals("RECRUITING")) {
+                progressStatuses.add(ProgressStatus.RECRUITING);
+                progressStatuses.add(ProgressStatus.CLOSED);
+            } else if (progressStatus.equals("COMPLETED")) {
+                progressStatuses.add(ProgressStatus.COMPLETED);
+            }
+        }
+
+        List<GroupPurchaseWithChatResponseDto> withMessages
+                = groupPurchaseService.getWithMessage(size, cursorGroupPurchaseId, progressStatuses, customUserDetails.getMemberId());
+        return ResponseEntity.ok(withMessages);
+    }
+}
