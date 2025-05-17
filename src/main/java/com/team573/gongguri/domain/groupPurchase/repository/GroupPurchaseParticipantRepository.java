@@ -9,9 +9,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface GroupPurchaseParticipantRepository extends JpaRepository<GroupPurchaseParticipant, Long> {
+
     int countByGroupPurchase_GroupId(Long groupId);
+
     boolean existsByGroupPurchase_GroupIdAndMember_Email(Long groupId, String email);
-    List<GroupPurchaseParticipant> findByMember_MemberIdAndGroupPurchase_ProgressStatus(Long memberId, ProgressStatus progressStatus);
+
+    List<GroupPurchaseParticipant> findByMember_MemberIdAndGroupPurchase_ProgressStatus(
+        Long memberId, ProgressStatus progressStatus);
 
     @Query("""
         SELECT g
@@ -21,12 +25,14 @@ public interface GroupPurchaseParticipantRepository extends JpaRepository<GroupP
           AND (:cursorId IS NULL OR g.groupParticipantId < :cursorId)
           AND (:deposit IS NULL OR g.deposit = :deposit)
           AND (g.participationStatus = 'JOINED')
+          AND (g.member.memberId != :memberId)
         ORDER BY g.groupParticipantId DESC
         """)
     List<GroupPurchaseParticipant> findParticipantsByCursor(
         @Param("groupPurchaseId") Long groupPurchaseId,
         @Param("cursorId") Long cursorParticipantId,
         @Param("deposit") Boolean deposit,
+        @Param("memberId") Long memberId,
         Pageable pageable
     );
 }

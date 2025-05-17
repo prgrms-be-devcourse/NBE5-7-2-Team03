@@ -50,11 +50,12 @@ public class GroupPurchaseParticipantService {
         Long groupPurchaseId,
         Long cursorParticipantId,
         Boolean deposit,
+        Long memberId,
         int size) {
 
         PageRequest pageRequest = PageRequest.of(0, size);
         List<GroupPurchaseParticipant> participants = groupPurchaseParticipantRepository.findParticipantsByCursor(
-            groupPurchaseId, cursorParticipantId, deposit, pageRequest);
+            groupPurchaseId, cursorParticipantId, deposit, memberId, pageRequest);
 
         return participants.stream()
             .map(GroupPurchaseParticipantMapper::toDto)

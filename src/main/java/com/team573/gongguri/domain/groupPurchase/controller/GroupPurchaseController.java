@@ -137,11 +137,12 @@ public class GroupPurchaseController {
         @PathVariable Long groupPurchaseId,
         @RequestParam(required = false, name = "cursor") Long cursorParticipantId,
         @RequestParam(required = false) Boolean deposit,
-        @RequestParam(defaultValue = "10") int size
+        @RequestParam(defaultValue = "10") int size,
+        @AuthenticationPrincipal CustomUserDetails customUserDetails
     ) {
         log.info("{}", deposit);
         List<GroupPurchaseParticipantResponseDto> participants = groupPurchaseParticipantService.getParticipants(
-            groupPurchaseId, cursorParticipantId, deposit, size);
+            groupPurchaseId, cursorParticipantId, deposit, customUserDetails.getMemberId(), size);
 
         return ResponseEntity.ok(participants);
     }
