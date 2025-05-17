@@ -3,7 +3,6 @@ package com.team573.gongguri.domain.groupPurchase.repository;
 import com.team573.gongguri.domain.groupPurchase.entity.GroupPurchaseParticipant;
 import com.team573.gongguri.domain.groupPurchase.entity.ProgressStatus;
 import java.util.List;
-import java.util.Optional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -13,8 +12,6 @@ public interface GroupPurchaseParticipantRepository extends JpaRepository<GroupP
     int countByGroupPurchase_GroupId(Long groupId);
     boolean existsByGroupPurchase_GroupIdAndMember_Email(Long groupId, String email);
     List<GroupPurchaseParticipant> findByMember_MemberIdAndGroupPurchase_ProgressStatus(Long memberId, ProgressStatus progressStatus);
-    Optional<GroupPurchaseParticipant> findByMember_memberIdAndGroupPurchase_GroupId(Long memberId, Long groupId);
-
 
     @Query("""
         SELECT g
