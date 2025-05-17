@@ -368,11 +368,26 @@ h1 {
 }
 
 .status-badge {
-  padding: 0.2rem 0.6rem;
-  border-radius: 10px;
   font-size: 0.75rem;
-  color: white;
-  background-color: #aaa;
+  padding: 0.25rem 0.5rem;
+  border-radius: 1rem;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.status-open {
+  background-color: #e0f7e9;
+  color: #2e7d32;
+}
+
+.status-closed {
+  background-color: #eeeeee;
+  color: #666666;
+}
+
+.status-done {
+  background-color: #e3eafc;
+  color: #1a237e;
 }
 
 /* 참여자 수 스타일 */
