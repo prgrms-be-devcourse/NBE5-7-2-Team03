@@ -1,5 +1,6 @@
 package com.team573.gongguri.domain.groupPurchase.controller;
 
+import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseParticipantResponseDto;
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseRequestDto;
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseResponseDto;
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseWithChatResponseDto;
@@ -129,6 +130,20 @@ public class GroupPurchaseController {
     ) {
         groupPurchaseParticipantService.cancelParticipation(groupPurchaseId, participantsId, customUserDetails.getMemberId());
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{groupPurchaseId}/participants")
+    public ResponseEntity<List<GroupPurchaseParticipantResponseDto>> getParticipants(
+        @PathVariable Long groupPurchaseId,
+        @RequestParam(required = false, name = "cursor") Long cursorParticipantId,
+        @RequestParam(required = false) Boolean deposit,
+        @RequestParam(defaultValue = "10") int size
+    ) {
+        log.info("{}", deposit);
+        List<GroupPurchaseParticipantResponseDto> participants = groupPurchaseParticipantService.getParticipants(
+            groupPurchaseId, cursorParticipantId, deposit, size);
+
+        return ResponseEntity.ok(participants);
     }
 }
 

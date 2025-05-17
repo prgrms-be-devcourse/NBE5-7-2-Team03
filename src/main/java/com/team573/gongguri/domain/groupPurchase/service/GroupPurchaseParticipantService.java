@@ -4,17 +4,22 @@ import static com.team573.gongguri.global.exception.ErrorCode.CANNOT_CANCEL_PAID
 import static com.team573.gongguri.global.exception.ErrorCode.NOT_FOUND_PARTICIPANT;
 import static com.team573.gongguri.global.exception.ErrorCode.UNAUTHORIZED_GROUP_PURCHASE_MANAGE;
 
+import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseParticipantResponseDto;
 import com.team573.gongguri.domain.groupPurchase.entity.GroupPurchaseParticipant;
+import com.team573.gongguri.domain.groupPurchase.mapper.GroupPurchaseParticipantMapper;
 import com.team573.gongguri.domain.groupPurchase.repository.GroupPurchaseParticipantRepository;
 import com.team573.gongguri.domain.groupPurchase.repository.GroupPurchaseRepository;
 import com.team573.gongguri.global.exception.ErrorException;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class GroupPurchaseParticipantService {
+
     private final GroupPurchaseParticipantRepository groupPurchaseParticipantRepository;
     private final GroupPurchaseRepository groupPurchaseRepository;
 
@@ -41,14 +46,30 @@ public class GroupPurchaseParticipantService {
         groupPurchaseParticipantRepository.save(participant);
     }
 
-    private GroupPurchaseParticipant getParticipantToManaged(Long groupPurchaseId, Long participantId, Long memberId) {
+    public List<GroupPurchaseParticipantResponseDto> getParticipants(
+        Long groupPurchaseId,
+        Long cursorParticipantId,
+        Boolean deposit,
+        int size) {
+
+        PageRequest pageRequest = PageRequest.of(0, size);
+        List<GroupPurchaseParticipant> participants = groupPurchaseParticipantRepository.findParticipantsByCursor(
+            groupPurchaseId, cursorParticipantId, deposit, pageRequest);
+
+        return participants.stream()
+            .map(GroupPurchaseParticipantMapper::toDto)
+            .toList();
+    }
+
+    private GroupPurchaseParticipant getParticipantToManaged(Long groupPurchaseId,
+        Long participantId, Long memberId) {
         // member가 공동 구매 관리자 인지 확인
         if (!groupPurchaseRepository.existsByGroupIdAndMember_MemberId(groupPurchaseId, memberId)) {
             throw new ErrorException(UNAUTHORIZED_GROUP_PURCHASE_MANAGE);
         }
 
         // 관리하기 위한 참여자 조회
-        return groupPurchaseParticipantRepository.findByMember_memberIdAndGroupPurchase_GroupId(participantId, groupPurchaseId)
+        return groupPurchaseParticipantRepository.findById(participantId)
             .orElseThrow(() -> new ErrorException(NOT_FOUND_PARTICIPANT));
     }
 }
