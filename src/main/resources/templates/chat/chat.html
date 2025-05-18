@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Room</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/chat/chat-styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/stomp-websocket@2.3.4-next/lib/stomp.min.js"></script>
+</head>
+<body>
+<div th:replace="~{fragments/layout :: mobileContainer}">
+  <div th:fragment="content">
+    <!-- Top bar component -->
+    <div th:replace="~{fragments/topbar :: topBar('채팅방')}"></div>
+
+    <main class="container">
+<!--      <a th:href="@{/groupPurchase/{id}/chat(id=${item.id})}" class="purchase-card">-->
+<!--        <img th:src="${item.imageUrl} != null ? ${item.imageUrl} : 'https://via.placeholder.com/110x90'" alt="item">-->
+<!--        <div class="purchase-info">-->
+<!--          <div class="purchase-header">-->
+<!--            <span class="purchase-title">${item.title}</span>-->
+<!--            <span class="status-badge ${statusClass}">${item.progressStatus}</span>-->
+<!--          </div>-->
+<!--          <div class="purchase-footer">-->
+<!--            <span>👥 ${item.currentParticipants || 0}/${item.maxParticipants}</span>-->
+<!--            <span><strong>₩${item.price.toLocaleString()}</strong></span>-->
+<!--          </div>-->
+<!--        </div>-->
+<!--      </a>-->
+
+      <!-- Chat messages -->
+      <div class="chat-container">
+        <div class="chat-messages" id="chat-messages">
+          <!-- Messages will be added here dynamically -->
+
+        </div>
+
+        <!-- Chat input -->
+        <div class="chat-input">
+          <input type="text" id="message" placeholder="Type a message...">
+          <button onclick="sendMessage()" class="send-button" id="send-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                 stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script th:inline="javascript">
+  let stompClient = null;
+  const nickname = [[${nickname}]];
+  const roomId = [[${roomId}]]
+  let isLast = false;
+  let cursor = null;
+  let isLoading = false;
+
+  // Get DOM elements
+  const messageInput = document.getElementById('message');
+  const chatMessages = document.getElementById('chat-messages');
+
+  // 연결하면 채팅방 접속
+  document.addEventListener('DOMContentLoaded', async function () {
+
+    const socket = new SockJS('/stomp'); // WebSocket 엔드포인트 (예: WebSocketConfig에서 설정한 엔드포인트)
+    stompClient = Stomp.over(socket);
+
+    stompClient.connect({}, function () {
+
+      stompClient.subscribe(`/room/${roomId}`, function (message) {
+        const payload = JSON.parse(message.body);
+        addMessageToChat(payload);
+      });
+    });
+
+    // 가장 최근 메시지 20개 조회
+    const data = await fetchChatMessages(roomId, 10);
+    if (data && data.length > 0) {
+      // const chatMessages = document.getElementById('chat-messages');
+
+      // 메시지 역순으로 표시 (오래된 메시지부터)
+      const messages = data;
+
+      // 채팅 상단에 메시지 추가
+      messages.forEach(message => {
+        prependMessageToChat(message);
+      });
+
+      // 메시지 추가 후 스크롤 위치 유지
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+  });
+
+  chatMessages.addEventListener('scroll', async function handleScroll() {
+    // 1. 스크롤 위치 확인 (상단 근처인지)
+    // 2. 이미 로딩 중이거나 마지막 페이지면 무시
+    if (chatMessages.scrollTop > 100 || isLast || isLoading) return;
+
+    // 로딩 시작
+    isLoading = true;
+
+    try {
+      // 메시지 가져오기 (다음 페이지 요청)
+      const data = await fetchChatMessages(roomId, 10);
+
+      if (data && data.length > 0) {
+        // 메시지를 채팅창 상단에 추가
+        data.forEach(message => {
+          prependMessageToChat(message);
+        });
+      }
+    } catch (error) {
+      console.error('메시지 불러오기 실패:', error);
+    } finally {
+      // 로딩 완료
+      isLoading = false;
+    }
+  });
+
+
+  // 메시지 전송
+  function sendMessage() {
+    const message = messageInput.value;
+
+    const payload = {
+      nickname: nickname,
+      content: message
+    };
+
+    stompClient.send(`/send/${roomId}`, {}, JSON.stringify(payload));
+
+    // Clear input
+    messageInput.value = '';
+    messageInput.focus();
+  }
+
+  // 공통 메시지 생성 함수
+  function createMessageElement(payload, isCurrentUser) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = isCurrentUser ? 'message sent' : 'message received';
+
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'message-content';
+
+    // 발신자 이름 (받은 메시지만 표시)
+    if (!isCurrentUser) {
+      const senderSpan = document.createElement('span');
+      senderSpan.className = 'message-sender';
+      senderSpan.textContent = payload.nickname;
+      contentDiv.appendChild(senderSpan);
+    }
+
+    // 메시지 내용
+    const messagePara = document.createElement('p');
+    messagePara.textContent = payload.content;
+    contentDiv.appendChild(messagePara);
+
+    // 메시지 시간
+    const timeSpan = document.createElement('span');
+    timeSpan.className = 'message-time';
+    timeSpan.textContent = formatLocalDateTime(payload.createdAt || new Date().toISOString());
+    contentDiv.appendChild(timeSpan);
+
+    messageDiv.appendChild(contentDiv);
+    return messageDiv;
+  }
+
+  // 메시지 추가 (최신 메시지)
+  function addMessageToChat(payload) {
+    const chatMessages = document.getElementById('chat-messages');
+    const isCurrentUser = payload.nickname === nickname;
+    const messageElement = createMessageElement(payload, isCurrentUser);
+
+    chatMessages.appendChild(messageElement);
+    chatMessages.scrollTop = chatMessages.scrollHeight; // 자동 스크롤
+  }
+
+  // 채팅 상단에 메시지 추가 (이전 메시지 로딩용)
+  function prependMessageToChat(payload) {
+    const chatMessages = document.getElementById('chat-messages');
+    const isCurrentUser = payload.nickname === nickname;
+    const messageElement = createMessageElement(payload, isCurrentUser);
+
+    if (chatMessages.firstChild) {
+      chatMessages.insertBefore(messageElement, chatMessages.firstChild);
+    } else {
+      chatMessages.appendChild(messageElement);
+    }
+  }
+
+  // 타임스탬프
+  function formatLocalDateTime(localDateTimeStr) {
+    const timestamp = new Date(localDateTimeStr.replace('T', ' '));
+
+    // 날짜 부분 포맷팅 (YYYY-MM-DD)
+    const year = timestamp.getFullYear();
+    const month = String(timestamp.getMonth() + 1).padStart(2, '0');
+    const day = String(timestamp.getDate()).padStart(2, '0');
+
+    // 시간 부분 포맷팅 (HH:MM)
+    const hours = String(timestamp.getHours()).padStart(2, '0');
+    const minutes = String(timestamp.getMinutes()).padStart(2, '0');
+
+    // 최종 포맷된 문자열 반환 (YYYY-MM-DD HH:MM)
+    return `${year}-${month}-${day} ${hours}:${minutes}`;
+  }
+
+  // 메시지 불러오기
+  async function fetchChatMessages(roomId, limit = 20) {
+    const url = new URL(`/chat/${roomId}/messages`, window.location.origin);
+    // URL에 쿼리 파라미터 추가
+    if (cursor !== null) {
+      url.searchParams.append('cursor', cursor);
+    }
+    url.searchParams.append('limit', limit);
+
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+      });
+
+      if (response.ok) {
+        // 응답이 성공적이면, JSON 데이터를 반환
+        const data = await response.json();
+        if (data.length < limit) {
+          isLast = true;
+        } else {
+          isLast = false;
+          cursor = data[limit-1].messageId;
+          console.log("cursor : " + cursor);
+        }
+
+        return data; // 메시지 리스트 반환
+      } else {
+        // 응답 실패 시
+        const errorText = await response.text();
+        alert(`오류 발생: ${errorText}`);
+      }
+    } catch (error) {
+      // 네트워크 에러 등 예외 처리
+      alert(`에러 발생: ${error.message}`);
+    }
+  }
+
+  // Handle Enter key in message input
+  messageInput.addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+      sendMessage();
+    }
+  });
+
+</script>
+</body>
+</html>
