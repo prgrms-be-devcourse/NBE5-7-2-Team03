@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>내 프로필</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" th:href="@{/css/myPage/mypage_common.css}">
+    <link rel="stylesheet" th:href="@{/css/myPage/mypage_purchase_common.css}">
+
+</head>
+<body>
+
+<div th:replace="~{fragments/layout :: mobileContainer}">
+    <div th:fragment="content">
+
+        <div th:replace="~{fragments/topbar :: topBar('마이페이지')}"></div>
+
+        <main class="container">
+
+            <section class="profile-area">
+                <div class="profile-box">
+                    <img class="profile-picture" src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="프로필 이미지">
+                    <span class="profile-nickname" th:text="${nickname}">닉네임</span>
+                </div>
+            </section>
+
+            <h3 class="section-title">내 게시물</h3>
+
+                <div class="status-filter">
+                    <a th:href="@{/my-page/profile(status='ALL')}"
+                       th:classappend="${status == 'ALL'} ? 'selected'" class="filter-btn">전체</a>
+                    <a th:href="@{/my-page/profile(status='ONGOING')}"
+                       th:classappend="${status == 'ONGOING'} ? 'selected'" class="filter-btn">진행중</a>
+                    <a th:href="@{/my-page/profile(status='COMPLETED')}"
+                       th:classappend="${status == 'COMPLETED'} ? 'selected'" class="filter-btn">완료</a>
+                </div>
+
+            <div class="purchase-list">
+                <a th:each="item : ${createdList}"
+                   th:href="@{|/group-purchase/${item.id}|}"
+                   class="purchase-card">
+
+                    <img th:src="${item.imageUrl != null} ? ${item.imageUrl} : 'https://via.placeholder.com/110x90'"
+                         alt="item" class="purchase-img">
+
+                    <div class="purchase-info">
+                        <div class="purchase-header">
+                            <div class="purchase-title" th:text="${item.title}">제목</div>
+                            <span class="status-badge"
+                                  th:text="${item.progressStatus == 'RECRUITING' ? '진행중'
+                          : (item.progressStatus == 'CLOSED' ? '모집마감' : '완료')}"
+                                  th:classappend="| ${item.progressStatus == 'RECRUITING' ? 'status-open'
+                          : (item.progressStatus == 'CLOSED' ? 'status-closed' : 'status-done')} |">
+                            </span>
+                        </div>
+
+                        <div class="purchase-footer">
+                            <span th:text="'👥 ' + ${item.currentParticipants} + '/' + ${item.maxParticipants}"></span>
+                            <span><strong th:text="'₩' + ${#numbers.formatInteger(item.price, 3, 'COMMA')}"></strong></span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </main>
+
+        <div th:replace="~{fragments/bottombar :: bottomNav('myPage')}"></div>
+
+    </div>
+</div>
+
+</body>
+</html>
