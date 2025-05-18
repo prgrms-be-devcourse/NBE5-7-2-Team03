@@ -53,6 +53,7 @@ public class GroupPurchaseController {
         return ResponseEntity.ok(groupPurchaseService.get(id, email));
     }
 
+    @Deprecated
     @GetMapping
     public ResponseEntity<List<GroupPurchaseResponseDto>> getAll(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -107,4 +108,34 @@ public class GroupPurchaseController {
                 = groupPurchaseService.getWithMessage(size, cursorGroupPurchaseId, progressStatuses, customUserDetails.getMemberId());
         return ResponseEntity.ok(withMessages);
     }
+
+    @GetMapping("/cursor")
+    public ResponseEntity<List<GroupPurchaseResponseDto>> getAllByCursor(
+            @RequestParam(required = false, name = "cursor") Long cursorGroupPurchaseId,
+            @RequestParam(required = false) String progressStatus,
+            @RequestParam(defaultValue = "10") int size,
+            @AuthenticationPrincipal CustomUserDetails customUserDetails
+    ) {
+        List<ProgressStatus> progressStatuses = new ArrayList<>();
+
+        if (progressStatus != null) {
+            if (progressStatus.equals("RECRUITING")) {
+                progressStatuses.add(ProgressStatus.RECRUITING);
+                progressStatuses.add(ProgressStatus.CLOSED);
+            } else if (progressStatus.equals("COMPLETED")) {
+                progressStatuses.add(ProgressStatus.COMPLETED);
+            }
+        }
+
+        List<GroupPurchaseResponseDto> groupPurchases
+                = groupPurchaseService.getAllByCursor(
+                cursorGroupPurchaseId,
+                progressStatuses,
+                size,
+                customUserDetails.getUsername()
+        );
+
+        return ResponseEntity.ok(groupPurchases);
+    }
+
 }
