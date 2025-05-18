@@ -10,9 +10,11 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 
 public interface GroupPurchaseRepository extends JpaRepository<GroupPurchase, Long> {
+    List<GroupPurchase> findByMember_MemberId(Long memberId);
+
     List<GroupPurchase> findByMember_MemberIdAndProgressStatus(Long memberId, ProgressStatus status);
 
-    List<GroupPurchase> findByMember_MemberId(Long memberId);
+    List<GroupPurchase> findByMember_MemberIdAndProgressStatusIn(Long memberId, List<ProgressStatus> recruiting);
 
     // softDelete 단건 조회
     Optional<GroupPurchase> findByGroupIdAndIsDeletedFalse(Long groupId);
@@ -33,5 +35,4 @@ public interface GroupPurchaseRepository extends JpaRepository<GroupPurchase, Lo
         @Param("status") ProgressStatus status,
         Pageable pageable
     );
-
 }

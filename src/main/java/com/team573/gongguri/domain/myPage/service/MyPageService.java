@@ -21,21 +21,25 @@ public class MyPageService {
     // 내가 작성한 공구글
     public List<GroupPurchaseResponseDto> findMyCreatedPurchases(Long memberId, String statusFilter){
 
-        ProgressStatus status = null;
-
-        if( !statusFilter.equals("ALL") ){
-            status = ProgressStatus.valueOf(statusFilter);
-        }
-
         List<GroupPurchase> purchases;
-        if(status != null) { // 'ALL'
-            purchases = groupPurchaseRepository.findByMember_MemberIdAndProgressStatus(memberId, status);
-        }else{
-            purchases = groupPurchaseRepository.findByMember_MemberId(memberId);
+        switch (statusFilter) {
+            case "ONGOING" -> {
+                List<ProgressStatus> statuses = List.of(ProgressStatus.RECRUITING, ProgressStatus.CLOSED);
+                purchases = groupPurchaseRepository.findByMember_MemberIdAndProgressStatusIn(memberId, statuses);
+            }
+            case "COMPLETED" -> {
+                purchases = groupPurchaseRepository.findByMember_MemberIdAndProgressStatus(memberId, ProgressStatus.COMPLETED);
+            }
+            default -> {
+                purchases = groupPurchaseRepository.findByMember_MemberId(memberId);
+            }
         }
 
         return purchases.stream()
-                .map(GroupPurchaseMapper::toDto)
+                .map(purchase -> {
+                    int currentParticipants = groupPurchaseParticipantRepository.countByGroupPurchase_GroupId(purchase.getGroupId());
+                    return GroupPurchaseMapper.toDto(purchase, currentParticipants, false);
+                })
                 .toList();
     }
 
@@ -50,7 +54,10 @@ public class MyPageService {
         // 필터링 entity 로부터 공구글 추출, DTO 변환
         return participants.stream()
                 .map(GroupPurchaseParticipant::getGroupPurchase)
-                .map(GroupPurchaseMapper::toDto)
+                .map(purchase -> {
+                    int currentParticipants = groupPurchaseParticipantRepository.countByGroupPurchase_GroupId(purchase.getGroupId());
+                    return GroupPurchaseMapper.toDto(purchase, currentParticipants, false);
+                })
                 .toList();
     }
 

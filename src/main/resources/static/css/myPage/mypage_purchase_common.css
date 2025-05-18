@@ -1,0 +1,39 @@
+.profile-area {
+    margin-top: 1rem;
+    display: flex;
+    justify-content: center;
+}
+
+.profile-area .profile-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: var(--muted);
+    padding: 1.5rem 2rem;
+    border-radius: var(--radius);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.profile-area .profile-picture {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    background-color: var(--border);
+    margin-bottom: 0.75rem;
+}
+
+.profile-area .profile-nickname {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--foreground);
+}
+.section-title {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #333;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid dimgray;
+}
