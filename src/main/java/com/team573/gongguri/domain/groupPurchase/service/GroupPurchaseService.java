@@ -125,9 +125,9 @@ public class GroupPurchaseService {
 
     @Transactional
     public void delete(Long id) {
-        GroupPurchase entity = groupPurchaseRepository.findByGroupIdAndIsDeletedFalse(id)
+        GroupPurchase groupPurchase = groupPurchaseRepository.findByGroupIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_GROUP_PURCHASE));
-        entity.markAsDeleted();
+        groupPurchase.markAsDeleted();
     }
 
     @Transactional
