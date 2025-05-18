@@ -35,3 +35,17 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### volumns
+docker/*_data
+
+### .gitignore ###
+uploads/
+C:/gongguri-uploads/
+
+### log ###
+*.log
+
+
+### 개인 설정 파일은 커밋 금지 ###
+application-local.yml
