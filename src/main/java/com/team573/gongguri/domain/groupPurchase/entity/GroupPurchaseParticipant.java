@@ -29,6 +29,16 @@ public class GroupPurchaseParticipant extends BaseEntity {
     @Column(nullable = false)
     private ParticipationStatus participationStatus;
 
+    private Boolean deposit = false;
+
+    public void confirmDeposit() {
+        this.deposit = true;
+    }
+
+    public void cancelMember() {
+        this.participationStatus = ParticipationStatus.CANCELLED;
+    }
+
     @Builder
     public GroupPurchaseParticipant(GroupPurchase groupPurchase, Member member, ParticipationStatus participationStatus) {
         this.groupPurchase = groupPurchase;

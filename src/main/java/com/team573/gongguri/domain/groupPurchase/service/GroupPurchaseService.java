@@ -4,6 +4,7 @@ import com.team573.gongguri.domain.chat.entity.ChatRoom;
 import com.team573.gongguri.domain.chat.service.ChatService;
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseRequestDto;
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseResponseDto;
+import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseSimpleResponseDto;
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseWithChatResponseDto;
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseWithParticipantCountDto;
 import com.team573.gongguri.domain.groupPurchase.entity.GroupPurchase;
@@ -185,5 +186,9 @@ public class GroupPurchaseService {
             .map(groupPurchase -> GroupPurchaseMapper.toWithMessageResponseDto(groupPurchase,
                 firstMessages))
             .toList();
+    }
+
+    public GroupPurchaseSimpleResponseDto getSimpleInfo(Long groupPurchaseId) {
+        return groupPurchaseJpqlRepository.getSimple(groupPurchaseId);
     }
 }
