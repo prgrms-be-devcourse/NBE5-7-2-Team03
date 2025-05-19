@@ -66,7 +66,7 @@ public class GroupPurchaseMapper {
             .build();
     }
 
-    public static GroupPurchaseResponseDto toDto(GroupPurchaseWithParticipantCountDto dto, boolean isParticipated) {
+    public static GroupPurchaseResponseDto toDto(GroupPurchaseWithParticipantCountDto dto, Boolean isParticipated) {
         return GroupPurchaseResponseDto.builder()
                 .id(dto.groupId())
                 .title(dto.title())
@@ -76,7 +76,7 @@ public class GroupPurchaseMapper {
                 .currentParticipants(dto.participantCount().intValue())
                 .progressStatus(dto.progressStatus().toString())
                 .imageUrl(dto.imageUrl())
-                .isParticipated(false)
+                .isParticipated(isParticipated)
                 .build();
     }
 

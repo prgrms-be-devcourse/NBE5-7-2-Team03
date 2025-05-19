@@ -111,7 +111,7 @@ public class GroupPurchaseService {
         return groupPurchases.stream()
                 .map(dto -> {
 
-                    return GroupPurchaseMapper.toDto(dto, false); // ← dto 기반 변환 메서드 필요
+                    return GroupPurchaseMapper.toDto(dto, null); // ← dto 기반 변환 메서드 필요
                 })
                 .collect(Collectors.toList());
     }
