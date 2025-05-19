@@ -1,0 +1,45 @@
+package com.team573.gongguri.domain.profile.controller;
+
+import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseResponseDto;
+import com.team573.gongguri.domain.groupPurchase.entity.PurchaseFilter;
+import com.team573.gongguri.domain.groupPurchase.service.GroupPurchaseService;
+import com.team573.gongguri.domain.member.entity.Member;
+import com.team573.gongguri.domain.member.repository.MemberRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
+
+@Controller
+@RequiredArgsConstructor
+@RequestMapping("/profile")
+public class ProfileViewController {
+    private final GroupPurchaseService groupPurchaseService;
+    private final MemberRepository memberRepository;
+
+    //특정 멤버 id로 멤버 프로필 조회
+    @GetMapping("/{memberId}")
+    public String showMyProfile(
+            @PathVariable Long memberId,
+            @RequestParam(defaultValue = "ALL") PurchaseFilter status,
+            Model model) {
+
+        Member member = memberRepository.findById(memberId).orElse(null);
+        model.addAttribute("nickname", member.getNickname());
+        model.addAttribute("memberId", memberId);
+
+        // 유저 작성 공동구매 리스트 조회
+        List<GroupPurchaseResponseDto> createdList = groupPurchaseService.findCreatedPurchases(memberId, status);
+
+        // 뷰에 상태와 리스트 전달
+        model.addAttribute("status", status.name());
+        model.addAttribute("createdList", createdList);
+
+        return "profile/profile";
+    }
+}

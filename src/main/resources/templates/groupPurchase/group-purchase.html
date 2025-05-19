@@ -54,7 +54,9 @@
             case "RECRUITING":
                 return "진행중";
             case "CLOSED":
-                return "완료";
+                return "모집 마감";
+            case "COMPLETED":
+                return "구매 완료"
             default:
                 return "알수없음";
         }
@@ -78,27 +80,55 @@
       <a href="/group-purchase/${item.id}" class="purchase-card">
         <img src="${item.imageUrl || 'https://via.placeholder.com/110x90'}" alt="item">
         <div class="purchase-info">
-          <div class="purchase-title">${item.title}</div>
-          <div class="purchase-footer">
-            <span>${item.currentParticipants || 0}/${item.maxParticipants}</span>
-            <span class="status-badge ${statusClass}">${statusText}</span>
-            <span><strong>₩${item.price.toLocaleString()}</strong></span>
-          </div>
+            <div class="purchase-title">${item.title}</div>
+
+         <div class="purchase-footer">
+  <div class="participant">
+    👥 <span class="participant-count">${item.currentParticipants || 0}/${item.maxParticipants}</span>
+  </div>
+
+  <div class="price-area">
+    <span class="status-badge ${statusClass}">${statusText}</span>
+    <span class="price">₩${item.price.toLocaleString()}</span>
+  </div>
+</div>
         </div>
       </a>`;
     }
 
-    async function fetchAndRender(status = 'ALL') {
-        const res = await fetch(apiUrl);
-        const data = await res.json();
+    let cursor = null;
+    let isLast = false;
+    let isLoading = false;
+    let currentStatus = 'ALL';
+
+    async function fetchGroupPurchases(status = 'ALL', size = 10) {
+        if (isLast || isLoading) return;
+
+        isLoading = true;
         const list = document.getElementById('groupPurchaseList');
 
-        let filtered = data;
-        if (status !== 'ALL') {
-            filtered = data.filter(item => item.progressStatus === status);
-        }
+        const url = new URL('/api/group-purchases', window.location.origin);
+        if (cursor) url.searchParams.append('cursor', cursor);
+        if (status !== 'ALL') url.searchParams.append('progressStatus', status);
+        url.searchParams.append('size', size);
 
-        list.innerHTML = filtered.map(renderCard).join('');
+        try {
+            const res = await fetch(url);
+            if (!res.ok) throw new Error('데이터 불러오기 실패');
+
+            const data = await res.json();
+
+            // 다음 커서 갱신
+            if (data.length < size) isLast = true;
+            if (data.length > 0) cursor = data[data.length - 1].id;
+
+            // 카드 추가
+            list.insertAdjacentHTML('beforeend', data.map(renderCard).join(''));
+        } catch (e) {
+            console.error(e);
+        } finally {
+            isLoading = false;
+        }
     }
 
     function filterStatus(status) {
@@ -106,14 +136,29 @@
         if (status === 'ALL') document.querySelectorAll('.filter-btn')[0].classList.add('selected');
         if (status === 'OPEN') document.querySelectorAll('.filter-btn')[1].classList.add('selected');
         if (status === 'DONE') document.querySelectorAll('.filter-btn')[2].classList.add('selected');
-        fetchAndRender(status);
+
+        currentStatus = status === 'OPEN' ? 'RECRUITING' : status === 'DONE' ? 'COMPLETED' : 'ALL';
+        cursor = null;
+        isLast = false;
+        document.getElementById('groupPurchaseList').innerHTML = '';
+        fetchGroupPurchases(currentStatus);
     }
+
+    window.addEventListener('scroll', () => {
+        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 300) {
+            fetchGroupPurchases(currentStatus);
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        fetchGroupPurchases(); // 최초 로딩
+    });
+
 
     function goToAdd() {
         window.location.href = "/group-purchase/post";
     }
 
-    fetchAndRender();
 </script>
 
 </body>

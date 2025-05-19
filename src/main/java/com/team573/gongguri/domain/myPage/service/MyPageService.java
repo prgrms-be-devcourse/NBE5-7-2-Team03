@@ -15,33 +15,8 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class MyPageService {
-    private final GroupPurchaseRepository groupPurchaseRepository;
+
     private final GroupPurchaseParticipantRepository groupPurchaseParticipantRepository;
-
-    // 내가 작성한 공구글
-    public List<GroupPurchaseResponseDto> findMyCreatedPurchases(Long memberId, String statusFilter){
-
-        List<GroupPurchase> purchases;
-        switch (statusFilter) {
-            case "ONGOING" -> {
-                List<ProgressStatus> statuses = List.of(ProgressStatus.RECRUITING, ProgressStatus.CLOSED);
-                purchases = groupPurchaseRepository.findByMember_MemberIdAndProgressStatusIn(memberId, statuses);
-            }
-            case "COMPLETED" -> {
-                purchases = groupPurchaseRepository.findByMember_MemberIdAndProgressStatus(memberId, ProgressStatus.COMPLETED);
-            }
-            default -> {
-                purchases = groupPurchaseRepository.findByMember_MemberId(memberId);
-            }
-        }
-
-        return purchases.stream()
-                .map(purchase -> {
-                    int currentParticipants = groupPurchaseParticipantRepository.countByGroupPurchase_GroupId(purchase.getGroupId());
-                    return GroupPurchaseMapper.toDto(purchase, currentParticipants, false);
-                })
-                .toList();
-    }
 
     // 내가 참여한 공구글
     public List<GroupPurchaseResponseDto> findMyParticipatedPurchases(Long memberId){

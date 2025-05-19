@@ -13,7 +13,7 @@
 <div th:replace="~{fragments/layout :: mobileContainer}">
     <div th:fragment="content">
 
-        <div th:replace="~{fragments/topbar :: topBar('마이페이지')}"></div>
+        <div th:replace="~{fragments/topbar :: topBar('프로필 조회')}"></div>
 
         <main class="container">
 
@@ -24,16 +24,16 @@
                 </div>
             </section>
 
-            <h3 class="section-title">내 게시물</h3>
+            <h3 class="section-title">게시물</h3>
 
             <div class="status-filter">
-                <a th:href="@{/my-page/profile(status='ALL')}"
+                <a th:href="@{|/profile/${memberId}?status=ALL|}"
                    th:class="${status} == 'ALL' ? 'filter-btn selected' : 'filter-btn'">전체</a>
 
-                <a th:href="@{/my-page/profile(status='ONGOING')}"
+                <a th:href="@{|/profile/${memberId}?status=ONGOING|}"
                    th:class="${status} == 'ONGOING' ? 'filter-btn selected' : 'filter-btn'">진행중</a>
 
-                <a th:href="@{/my-page/profile(status='COMPLETED')}"
+                <a th:href="@{|/profile/${memberId}?status=COMPLETED|}"
                    th:class="${status} == 'COMPLETED' ? 'filter-btn selected' : 'filter-btn'">완료</a>
             </div>
 

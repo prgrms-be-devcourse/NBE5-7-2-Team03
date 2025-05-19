@@ -44,7 +44,9 @@ public class GroupPurchaseMapper {
                 entity.getAccount(),
                 entity.getProgressStatus().toString(),
                 entity.getImageUrl(),
-                isParticipated
+                isParticipated,
+                entity.getMember().getEmail(),
+                entity.getMember().getNickname()
         );
     }
 
@@ -63,4 +65,22 @@ public class GroupPurchaseMapper {
             .createAt(dto.createdAt())
             .build();
     }
+
+    public static GroupPurchaseResponseDto toDto(GroupPurchaseWithParticipantCountDto dto, Boolean isParticipated) {
+        return GroupPurchaseResponseDto.builder()
+                .id(dto.groupId())
+                .title(dto.title())
+                .content(dto.content())
+                .price(dto.price())
+                .maxParticipants(dto.maxParticipants())
+                .currentParticipants(dto.participantCount().intValue())
+                .progressStatus(dto.progressStatus().toString())
+                .imageUrl(dto.imageUrl())
+                .isParticipated(isParticipated)
+                .build();
+    }
+
+
+
 }
+
