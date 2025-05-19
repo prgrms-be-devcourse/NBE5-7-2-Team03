@@ -6,6 +6,7 @@ import com.team573.gongguri.domain.groupPurchase.dto.*;
 import com.team573.gongguri.domain.groupPurchase.entity.GroupPurchase;
 import com.team573.gongguri.domain.groupPurchase.entity.GroupPurchaseParticipant;
 import com.team573.gongguri.domain.groupPurchase.entity.ProgressStatus;
+import com.team573.gongguri.domain.groupPurchase.entity.PurchaseFilter;
 import com.team573.gongguri.domain.groupPurchase.mapper.GroupPurchaseMapper;
 import com.team573.gongguri.domain.groupPurchase.mapper.GroupPurchaseParticipantMapper;
 import com.team573.gongguri.domain.groupPurchase.repository.GroupPurchaseParticipantRepository;
@@ -206,4 +207,30 @@ public class GroupPurchaseService {
     public GroupPurchaseSimpleResponseDto getSimpleInfo(Long groupPurchaseId) {
         return groupPurchaseJpqlRepository.getSimple(groupPurchaseId);
     }
-}
+
+    //특정 멤버가 작성한 공동구매글 조회
+    public List<GroupPurchaseResponseDto> findCreatedPurchases(Long memberId, PurchaseFilter purchaseFilter){
+
+        List<GroupPurchase> purchases;
+        switch (purchaseFilter) {
+            case ONGOING -> {
+                List<ProgressStatus> statuses = List.of(ProgressStatus.RECRUITING, ProgressStatus.CLOSED);
+                purchases = groupPurchaseRepository.findByMember_MemberIdAndProgressStatusIn(memberId, statuses);
+            }
+            case COMPLETED -> {
+                purchases = groupPurchaseRepository.findByMember_MemberIdAndProgressStatus(memberId, ProgressStatus.COMPLETED);
+            }
+            default -> {
+                purchases = groupPurchaseRepository.findByMember_MemberId(memberId);
+            }
+        }
+
+        return purchases.stream()
+                .map(purchase -> {
+                    int currentParticipants = participantRepository.countByGroupPurchase_GroupId(purchase.getGroupId());
+                    return GroupPurchaseMapper.toDto(purchase, currentParticipants, false);
+                })
+                .toList();
+    }
+
+    }
