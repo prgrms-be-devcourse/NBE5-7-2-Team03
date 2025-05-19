@@ -15,11 +15,24 @@
 
         <main class="container">
 
-            <!-- ✅ 제목 + 진행 상태 + 가격 -->
+            <!-- 제목 + 진행 상태 + 가격 -->
             <div class="purchase-header">
-                <h2 id="groupTitle" class="title">제목</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2 id="groupTitle" class="title">제목</h2>
+
+                    <!-- 점세개 메뉴 -->
+                    <div id="menu-wrapper" class="menu-wrapper">
+                        <button id="menu-button" class="menu-button">⋮</button>
+                        <div id="menu-dropdown" class="menu-dropdown">
+                            <button onclick="editPost()">수정하기</button>
+                            <button onclick="deletePost()">삭제하기</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 상태/가격 -->
                 <div class="meta-info">
-                    <span id="groupStatus" class="badge">진행중</span>
+                    <span id="groupStatus" class="badge status">진행중</span>
                     <span class="price">
                         <small style="font-size: 14px; font-weight: 400; margin-right: 6px;">1인당</small>
                         <span id="groupPrice">₩0</span>
@@ -61,25 +74,74 @@
 <script>
     document.addEventListener("DOMContentLoaded", async () => {
         const groupId = [[${groupId}]];
+        const currentUserEmail = '[[${#authentication.principal.username}]]';
+
         try {
             const res = await fetch(`/api/group-purchases/${groupId}`);
-            if (!res.ok) throw new Error("불러오기 실패");
             const data = await res.json();
 
+            const statusMap = {
+                RECRUITING: { text: "진행중", class: "status-open" },
+                CLOSED: { text: "모집 마감", class: "status-closed" },
+                COMPLETED: { text: "구매 완료", class: "status-completed" }
+            }
             document.getElementById("groupTitle").innerText = data.title;
-            document.getElementById("groupStatus").innerText =
-                data.progressStatus === "RECRUITING" ? "진행중" : "완료";
+
+            const groupStatusEl = document.getElementById("groupStatus");
+            const statusInfo = statusMap[data.progressStatus] || { text: "알 수 없음", class: "status-unknown" };
+            groupStatusEl.innerText = statusInfo.text;
+            groupStatusEl.classList.remove("status-open", "status-closed", "status-completed", "status-unknown");
+            groupStatusEl.classList.add(statusInfo.class);
+
             document.getElementById("groupPrice").innerText = `₩${data.price.toLocaleString()}`;
             document.getElementById("writerNickname").innerText = data.writerNickname ?? "작성자";
             document.getElementById("groupContent").innerText = data.content;
             document.getElementById("memberCount").innerText = `${data.currentParticipants}/${data.maxParticipants}`;
-            if (data.imageUrl) {
-                document.getElementById("productImage").src = data.imageUrl;
+            if (data.imageUrl) document.getElementById("productImage").src = data.imageUrl;
+
+            // 👇 작성자일 경우에만 메뉴 보이기
+            console.log("작성자 이메일:", data.writerEmail);
+            console.log("현재 로그인 사용자:", currentUserEmail);
+            if (data.writerEmail === currentUserEmail) {
+                console.log("✅ 작성자 일치 → 메뉴 보여줌");
+                document.getElementById("menu-wrapper").style.display = "inline-block";
             }
         } catch (err) {
             alert("상세 정보를 불러오지 못했습니다.");
         }
     });
+
+    document.addEventListener("click", (e) => {
+        const menuButton = document.getElementById("menu-button");
+        const menuDropdown = document.getElementById("menu-dropdown");
+
+        if (menuButton.contains(e.target)) {
+            menuDropdown.style.display = menuDropdown.style.display === "block" ? "none" : "block";
+        } else {
+            menuDropdown.style.display = "none";
+        }
+    });
+
+    function editPost() {
+        const groupId = [[${groupId}]];
+        location.href = `/group-purchase/update?id=${groupId}`;
+    }
+
+    function deletePost() {
+        const groupId = [[${groupId}]];
+        if (confirm("정말 삭제하시겠습니까?")) {
+            fetch(`/api/group-purchases/${groupId}`, {
+                method: "DELETE"
+            }).then(res => {
+                if (res.ok) {
+                    alert("삭제 완료");
+                    window.location.href = "/group-purchase";
+                } else {
+                    alert("삭제 실패");
+                }
+            });
+        }
+    }
 
     document.addEventListener("DOMContentLoaded", async () => {
         const groupId = [[${groupId}]];
@@ -94,7 +156,12 @@
             // 참여자 수
             memberCount.innerText = `${data.currentParticipants}/${data.maxParticipants}`;
 
-            if (data.currentParticipants >= data.maxParticipants || data.progressStatus === "CLOSED") {
+            if (data.progressStatus === "COMPLETED") {
+                joinButton.disabled = true;
+                joinButton.innerText = "구매 완료";
+                joinButton.style.backgroundColor = "#ccc";
+                joinButton.style.cursor = "not-allowed";
+            } else if (data.currentParticipants >= data.maxParticipants || data.progressStatus === "CLOSED") {
                 joinButton.disabled = true;
                 joinButton.innerText = "모집 마감";
                 joinButton.style.backgroundColor = "#ccc";
@@ -118,6 +185,7 @@
 
     document.querySelector(".join-button").addEventListener("click", async () => {
         const groupId = [[${groupId}]];
+
         const res = await fetch(`/api/group-purchases/${groupId}/join`, {
             method: "POST"
         });
@@ -129,6 +197,7 @@
             alert("참여에 실패했습니다.");
         }
     });
+
 
 </script>
 </body>

@@ -44,7 +44,9 @@ public class GroupPurchaseMapper {
                 entity.getAccount(),
                 entity.getProgressStatus().toString(),
                 entity.getImageUrl(),
-                isParticipated
+                isParticipated,
+                entity.getMember().getEmail(),
+                entity.getMember().getNickname()
         );
     }
 
@@ -64,3 +66,4 @@ public class GroupPurchaseMapper {
             .build();
     }
 }
+

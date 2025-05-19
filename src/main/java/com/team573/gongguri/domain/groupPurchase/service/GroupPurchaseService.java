@@ -80,18 +80,19 @@ public class GroupPurchaseService {
     public GroupPurchaseResponseDto get(Long id, String email) {
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_MEMBER));
-        GroupPurchase entity = groupPurchaseRepository.findById(id)
+
+        GroupPurchase groupPurchase = groupPurchaseRepository.findByGroupIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_GROUP_PURCHASE));
+
         int currentParticipants = participantRepository.countByGroupPurchase_GroupId(id);
         boolean isParticipated = participantRepository.existsByGroupPurchase_GroupIdAndMember_Email(id, email);
-        return GroupPurchaseMapper.toDto(entity, currentParticipants, isParticipated);
+
+        return GroupPurchaseMapper.toDto(groupPurchase, currentParticipants, isParticipated);
     }
 
     @Transactional(readOnly = true)
     public List<GroupPurchaseResponseDto> getAll(String email) {
-        Member member = memberRepository.findByEmail(email)
-                .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_MEMBER));
-        return groupPurchaseRepository.findAll().stream()
+        return groupPurchaseRepository.findAllActive().stream()
                 .map(entity -> {
                     int currentParticipants = participantRepository.countByGroupPurchase_GroupId(entity.getGroupId());
                     boolean isParticipated = participantRepository.existsByGroupPurchase_GroupIdAndMember_Email(entity.getGroupId(), email);
@@ -103,10 +104,10 @@ public class GroupPurchaseService {
     @Transactional
     public GroupPurchaseResponseDto update(Long id, GroupPurchaseRequestDto dto) {
 
-        GroupPurchase entity = groupPurchaseRepository.findById(id)
+        GroupPurchase groupPurchase = groupPurchaseRepository.findByGroupIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_GROUP_PURCHASE));
         try {
-            entity.update(
+            groupPurchase.update(
                     dto.title(),
                     dto.content(),
                     dto.price(),
@@ -115,19 +116,19 @@ public class GroupPurchaseService {
                     dto.account(),
                     ProgressStatus.valueOf(dto.progressStatus().toUpperCase())
             );
-            entity.setImageUrl(dto.imageUrl());
+            groupPurchase.setImageUrl(dto.imageUrl());
         } catch (Exception e) {
             log.error("공동구매 수정 실패", e);
             throw new ErrorException(ErrorCode.UPDATE_FAILED_GROUP_PURCHASE);
         }
-        return GroupPurchaseMapper.toDto(entity);
+        return GroupPurchaseMapper.toDto(groupPurchase);
     }
 
     @Transactional
     public void delete(Long id) {
-        GroupPurchase entity = groupPurchaseRepository.findById(id)
+        GroupPurchase groupPurchase = groupPurchaseRepository.findByGroupIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_GROUP_PURCHASE));
-        groupPurchaseRepository.delete(entity);
+        groupPurchase.markAsDeleted();
     }
 
     @Transactional
@@ -135,7 +136,7 @@ public class GroupPurchaseService {
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_MEMBER));
 
-        GroupPurchase groupPurchase = groupPurchaseRepository.findById(groupId)
+        GroupPurchase groupPurchase = groupPurchaseRepository.findByGroupIdAndIsDeletedFalse(groupId)
                 .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_GROUP_PURCHASE));
 
         int currentCount = participantRepository.countByGroupPurchase_GroupId(groupId);

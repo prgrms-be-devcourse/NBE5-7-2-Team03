@@ -33,10 +33,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Slf4j
 public class GroupPurchaseController {
-    private final GroupPurchaseService service;
     private final GroupPurchaseService groupPurchaseService;
     private final GroupPurchaseParticipantService groupPurchaseParticipantService;
-
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GroupPurchaseResponseDto> add(
@@ -45,7 +43,7 @@ public class GroupPurchaseController {
 
         log.info("[GroupPurchaseController] JSON 방식 게시글 작성 요청 수신");
         String email = customUserDetails.getUsername();
-        GroupPurchaseResponseDto createdDto = service.add(dto, email);
+        GroupPurchaseResponseDto createdDto = groupPurchaseService.add(dto, email);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdDto);
     }
 
@@ -54,14 +52,14 @@ public class GroupPurchaseController {
             @PathVariable Long id,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         String email = userDetails.getUsername();
-        return ResponseEntity.ok(service.get(id, email));
+        return ResponseEntity.ok(groupPurchaseService.get(id, email));
     }
 
     @GetMapping
     public ResponseEntity<List<GroupPurchaseResponseDto>> getAll(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         String email = userDetails.getUsername();
-        return ResponseEntity.ok(service.getAll(email));
+        return ResponseEntity.ok(groupPurchaseService.getAll(email));
     }
 
     @PutMapping("/{id}")
@@ -69,12 +67,12 @@ public class GroupPurchaseController {
             @PathVariable Long id,
             @RequestBody GroupPurchaseRequestDto dto
     ) {
-        return ResponseEntity.ok(service.update(id, dto));
+        return ResponseEntity.ok(groupPurchaseService.update(id, dto));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        service.delete(id);
+        groupPurchaseService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
@@ -84,7 +82,7 @@ public class GroupPurchaseController {
             @AuthenticationPrincipal CustomUserDetails customUserDetails
     ) {
         String email = customUserDetails.getUsername();
-        service.join(id, email);
+        groupPurchaseService.join(id, email);
         log.info("member joined: {}", email);
         return ResponseEntity.noContent().build();
     }
@@ -147,4 +145,3 @@ public class GroupPurchaseController {
         return ResponseEntity.ok(participants);
     }
 }
-

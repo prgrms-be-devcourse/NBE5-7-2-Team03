@@ -13,5 +13,7 @@ public record GroupPurchaseResponseDto(
         String account,
         String progressStatus,
         String imageUrl,
-        boolean isParticipated
+        boolean isParticipated,
+        String writerEmail,
+        String writerNickname
 ) {}
