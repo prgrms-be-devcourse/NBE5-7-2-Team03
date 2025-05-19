@@ -179,6 +179,12 @@
     document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('selected'));
     document.querySelector(`.filter-btn[data-status="${status}"]`).classList.add('selected');
 
+    // 스크롤을 최상단으로 이동
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth' // 부드러운 스크롤 효과 적용
+    });
+
     loadInitialData(status);
   }
 
@@ -213,7 +219,7 @@
         console.log('Near bottom of page, loading more data...');
         loadMoreData();
       }
-    }, 200));
+    }, 100));
   });
 </script>
 
