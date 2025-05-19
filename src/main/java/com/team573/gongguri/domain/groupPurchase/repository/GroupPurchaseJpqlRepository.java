@@ -1,5 +1,6 @@
 package com.team573.gongguri.domain.groupPurchase.repository;
 
+import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseSimpleResponseDto;
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseWithParticipantCountDto;
 import com.team573.gongguri.domain.groupPurchase.entity.ProgressStatus;
 import jakarta.persistence.EntityManager;
@@ -56,6 +57,28 @@ public class GroupPurchaseJpqlRepository {
             .setParameter("memberId", memberId)
             .setMaxResults(size)
             .getResultList();
+    }
+
+    public GroupPurchaseSimpleResponseDto getSimple(Long groupPurchaseId) {
+        String jpql = """
+            SELECT new com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseSimpleResponseDto(
+                gp.id,
+                gp.title,
+                gp.maxParticipants,
+                COUNT(p),
+                gp.progressStatus,
+                gp.imageUrl,
+                gp.price
+            )
+            FROM GroupPurchase gp
+            LEFT JOIN GroupPurchaseParticipant p on p.groupPurchase.id = gp.id AND p.participationStatus = 'JOINED'
+            WHERE (gp.groupId = :groupPurchaseId)
+            GROUP BY gp.groupId
+            """;
+
+        return em.createQuery(jpql, GroupPurchaseSimpleResponseDto.class)
+            .setParameter("groupPurchaseId", groupPurchaseId)
+            .getSingleResult();
     }
 
     public List<GroupPurchaseWithParticipantCountDto> findAllWithCursorAndParticipantCount(
