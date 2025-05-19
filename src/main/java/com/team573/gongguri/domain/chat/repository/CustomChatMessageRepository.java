@@ -10,9 +10,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
-import org.springframework.data.mongodb.core.aggregation.GroupOperation;
-import org.springframework.data.mongodb.core.aggregation.MatchOperation;
-import org.springframework.data.mongodb.core.aggregation.SortOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Repository;
 
@@ -26,16 +23,7 @@ public class CustomChatMessageRepository {
             return Collections.emptyMap();
         }
 
-        MatchOperation matchStage = Aggregation.match(Criteria.where("room_id").in(chatRoomIds));
-        SortOperation sortStage = Aggregation.sort(Sort.by(Sort.Direction.DESC, "createdAt"));
-        GroupOperation groupStage = Aggregation.group("room_id")
-            .first("content").as("latestContent");
-
-        Aggregation aggregation = Aggregation.newAggregation(
-            matchStage,
-            sortStage,
-            groupStage
-        );
+        Aggregation aggregation = this.createLatestMessageAggregation(chatRoomIds);
 
         // Document로 결과 받기
         AggregationResults<Document> results = mongoTemplate.aggregate(
@@ -44,6 +32,19 @@ public class CustomChatMessageRepository {
             Document.class
         );
 
+        return this.resultsToMap(results);
+    }
+
+    private Aggregation createLatestMessageAggregation(List<Long> chatRoomIds) {
+        return Aggregation.newAggregation(
+            Aggregation.match(Criteria.where("room_id").in(chatRoomIds)),
+            Aggregation.sort(Sort.by(Sort.Direction.DESC, "createdAt")),
+            Aggregation.group("room_id")
+                .first("content").as("latestContent")
+        );
+    }
+
+    private Map<Long, String> resultsToMap(AggregationResults<Document> results) {
         Map<Long, String> latestMessageContents = new HashMap<>();
 
         for (Document doc : results) {
