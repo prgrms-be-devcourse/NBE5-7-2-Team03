@@ -154,7 +154,7 @@ th { background-color: #f2f2f2; }
 }
 
 .btn-remove-completed {
-  background-color: #ef6666;
+  background-color: #cccccc;
   color: white;
   cursor: not-allowed;
 }
