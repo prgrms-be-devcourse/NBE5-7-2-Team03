@@ -30,4 +30,6 @@ public interface GroupPurchaseRepository extends JpaRepository<GroupPurchase, Lo
         @Param("status") ProgressStatus status,
         Pageable pageable
     );
+
+    Boolean existsByGroupIdAndMember_MemberId(Long groupId, Long memberId);
 }
