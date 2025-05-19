@@ -11,7 +11,7 @@
     <div th:fragment="content">
         <div th:replace="~{fragments/topbar :: topBar('로그인')}"></div>
 
-        <main class="container">
+        <main class="container login-page">
             <form class="member-form" th:action="@{/login}" method="post">
 
                 <script th:if="${successMessage}" th:inline="javascript">
