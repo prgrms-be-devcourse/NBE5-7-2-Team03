@@ -80,12 +80,18 @@
       <a href="/group-purchase/${item.id}" class="purchase-card">
         <img src="${item.imageUrl || 'https://via.placeholder.com/110x90'}" alt="item">
         <div class="purchase-info">
-          <div class="purchase-title">${item.title}</div>
-          <div class="purchase-footer">
-            <span>${item.currentParticipants || 0}/${item.maxParticipants}</span>
-            <span class="status-badge ${statusClass}">${statusText}</span>
-            <span><strong>₩${item.price.toLocaleString()}</strong></span>
-          </div>
+            <div class="purchase-title">${item.title}</div>
+
+         <div class="purchase-footer">
+  <div class="participant">
+    👥 <span class="participant-count">${item.currentParticipants || 0}/${item.maxParticipants}</span>
+  </div>
+
+  <div class="price-area">
+    <span class="status-badge ${statusClass}">${statusText}</span>
+    <span class="price">₩${item.price.toLocaleString()}</span>
+  </div>
+</div>
         </div>
       </a>`;
     }

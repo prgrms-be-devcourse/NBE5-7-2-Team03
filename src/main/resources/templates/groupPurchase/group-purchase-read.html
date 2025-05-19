@@ -24,8 +24,9 @@
                     <div id="menu-wrapper" class="menu-wrapper">
                         <button id="menu-button" class="menu-button">⋮</button>
                         <div id="menu-dropdown" class="menu-dropdown">
-                            <button onclick="editPost()">수정하기</button>
-                            <button onclick="deletePost()">삭제하기</button>
+                            <button onclick="manageParticipants()" class="menu-manage-button">참여자 관리</button>
+                            <button onclick="editPost()" class="menu-edit-button">수정하기</button>
+                            <button onclick="deletePost()" class="menu-delete-button">삭제하기</button>
                         </div>
                     </div>
                 </div>
@@ -42,7 +43,7 @@
 
             <!-- ✅ 작성자 정보 -->
             <button class="profile-button">
-                <img src="/images/profile-icon.png" alt="프로필" class="profile-icon" />
+                <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="프로필" class="profile-icon" />
                 <div class="profile-info">
                     <span id="writerNickname" class="nickname">작성자</span>
                 </div>
@@ -59,8 +60,7 @@
             <!-- ✅ 참가 버튼 + 인원 -->
             <div class="group-action-area">
                 <div class="member-count-box">
-                    <img src="/images/user-count-icon.png" alt="참여 인원 아이콘" />
-                    <span id="memberCount">0/0</span>
+                    👥 <span id="memberCount">0/0</span>
                 </div>
                 <button class="join-button">참가하기</button>
             </div>
@@ -141,6 +141,12 @@
                 }
             });
         }
+    }
+
+    // ✅ 여기에 추가
+    function manageParticipants() {
+        const groupId = [[${groupId}]];
+        location.href = `/group-purchase/${groupId}/participants`;
     }
 
     document.addEventListener("DOMContentLoaded", async () => {
