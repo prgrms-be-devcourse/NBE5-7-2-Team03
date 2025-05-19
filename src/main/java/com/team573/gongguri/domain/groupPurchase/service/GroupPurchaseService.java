@@ -2,11 +2,7 @@ package com.team573.gongguri.domain.groupPurchase.service;
 
 import com.team573.gongguri.domain.chat.entity.ChatRoom;
 import com.team573.gongguri.domain.chat.service.ChatService;
-import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseRequestDto;
-import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseResponseDto;
-import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseSimpleResponseDto;
-import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseWithChatResponseDto;
-import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseWithParticipantCountDto;
+import com.team573.gongguri.domain.groupPurchase.dto.*;
 import com.team573.gongguri.domain.groupPurchase.entity.GroupPurchase;
 import com.team573.gongguri.domain.groupPurchase.entity.GroupPurchaseParticipant;
 import com.team573.gongguri.domain.groupPurchase.entity.ProgressStatus;
@@ -90,6 +86,7 @@ public class GroupPurchaseService {
         return GroupPurchaseMapper.toDto(groupPurchase, currentParticipants, isParticipated);
     }
 
+    @Deprecated
     @Transactional(readOnly = true)
     public List<GroupPurchaseResponseDto> getAll(String email) {
         return groupPurchaseRepository.findAllActive().stream()
@@ -97,6 +94,24 @@ public class GroupPurchaseService {
                     int currentParticipants = participantRepository.countByGroupPurchase_GroupId(entity.getGroupId());
                     boolean isParticipated = participantRepository.existsByGroupPurchase_GroupIdAndMember_Email(entity.getGroupId(), email);
                     return GroupPurchaseMapper.toDto(entity, currentParticipants, isParticipated);
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<GroupPurchaseResponseDto> getAllByCursor(
+            Long cursorId,
+            List<ProgressStatus> statuses,
+            int size,
+            String email
+    ) {
+        List<GroupPurchaseWithParticipantCountDto> groupPurchases =
+                groupPurchaseJpqlRepository.findAllWithCursorAndParticipantCount(cursorId, statuses, size);
+
+        return groupPurchases.stream()
+                .map(dto -> {
+
+                    return GroupPurchaseMapper.toDto(dto, null); // ← dto 기반 변환 메서드 필요
                 })
                 .collect(Collectors.toList());
     }

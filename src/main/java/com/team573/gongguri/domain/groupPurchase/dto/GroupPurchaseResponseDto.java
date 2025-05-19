@@ -1,7 +1,10 @@
 package com.team573.gongguri.domain.groupPurchase.dto;
 
+import lombok.Builder;
+
 import java.time.LocalDateTime;
 
+@Builder
 public record GroupPurchaseResponseDto(
         Long id,
         String title,
@@ -13,7 +16,7 @@ public record GroupPurchaseResponseDto(
         String account,
         String progressStatus,
         String imageUrl,
-        boolean isParticipated,
+        Boolean isParticipated,
         String writerEmail,
         String writerNickname
 ) {}
