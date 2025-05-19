@@ -76,7 +76,7 @@ public class GroupPurchaseMapper {
                 .currentParticipants(dto.participantCount().intValue())
                 .progressStatus(dto.progressStatus().toString())
                 .imageUrl(dto.imageUrl())
-                .isParticipated(isParticipated)
+                .isParticipated(false)
                 .build();
     }
 

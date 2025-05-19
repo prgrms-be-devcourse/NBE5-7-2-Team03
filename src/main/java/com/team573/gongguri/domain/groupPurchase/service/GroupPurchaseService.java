@@ -2,11 +2,7 @@ package com.team573.gongguri.domain.groupPurchase.service;
 
 import com.team573.gongguri.domain.chat.entity.ChatRoom;
 import com.team573.gongguri.domain.chat.service.ChatService;
-import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseRequestDto;
-import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseResponseDto;
-import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseSimpleResponseDto;
-import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseWithChatResponseDto;
-import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseWithParticipantCountDto;
+import com.team573.gongguri.domain.groupPurchase.dto.*;
 import com.team573.gongguri.domain.groupPurchase.entity.GroupPurchase;
 import com.team573.gongguri.domain.groupPurchase.entity.GroupPurchaseParticipant;
 import com.team573.gongguri.domain.groupPurchase.entity.ProgressStatus;
@@ -114,8 +110,8 @@ public class GroupPurchaseService {
 
         return groupPurchases.stream()
                 .map(dto -> {
-                    boolean isParticipated = participantRepository.existsByGroupPurchase_GroupIdAndMember_Email(dto.groupId(), email);
-                    return GroupPurchaseMapper.toDto(dto, isParticipated); // ← dto 기반 변환 메서드 필요
+
+                    return GroupPurchaseMapper.toDto(dto, false); // ← dto 기반 변환 메서드 필요
                 })
                 .collect(Collectors.toList());
     }

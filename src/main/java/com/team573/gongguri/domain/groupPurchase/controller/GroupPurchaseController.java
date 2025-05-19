@@ -58,7 +58,7 @@ public class GroupPurchaseController {
     }
 
     @Deprecated
-    @GetMapping
+    @GetMapping("/deprecated")
     public ResponseEntity<List<GroupPurchaseResponseDto>> getAll(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         String email = userDetails.getUsername();
@@ -148,7 +148,7 @@ public class GroupPurchaseController {
         return ResponseEntity.ok(participants);
     }
 
-    @GetMapping("/cursor")
+    @GetMapping
     public ResponseEntity<List<GroupPurchaseResponseDto>> getAllByCursor(
             @RequestParam(required = false, name = "cursor") Long cursorGroupPurchaseId,
             @RequestParam(required = false) String progressStatus,

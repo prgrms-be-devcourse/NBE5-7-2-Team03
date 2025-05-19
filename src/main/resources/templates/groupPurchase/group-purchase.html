@@ -107,7 +107,7 @@
         isLoading = true;
         const list = document.getElementById('groupPurchaseList');
 
-        const url = new URL('/api/group-purchases/cursor', window.location.origin);
+        const url = new URL('/api/group-purchases', window.location.origin);
         if (cursor) url.searchParams.append('cursor', cursor);
         if (status !== 'ALL') url.searchParams.append('progressStatus', status);
         url.searchParams.append('size', size);
