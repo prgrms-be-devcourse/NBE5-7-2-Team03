@@ -46,7 +46,9 @@ public class GroupPurchaseMapper {
                 entity.getImageUrl(),
                 isParticipated,
                 entity.getMember().getEmail(),
-                entity.getMember().getNickname()
+                entity.getMember().getNickname(),
+                entity.getMember().getMemberId()
+
         );
     }
 
