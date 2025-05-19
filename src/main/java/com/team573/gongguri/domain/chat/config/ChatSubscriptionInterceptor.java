@@ -1,16 +1,16 @@
 package com.team573.gongguri.domain.chat.config;
 
-import static com.team573.gongguri.global.exception.ErrorCode.FAILED_AUTHENTICATION;
-import static com.team573.gongguri.global.exception.ErrorCode.INVALID_REQUEST;
-import static com.team573.gongguri.global.exception.ErrorCode.NOT_FOUND_MEMBER;
-import static com.team573.gongguri.global.exception.ErrorCode.NOT_FOUND_CHATROOM;
+import static com.team573.gongguri.global.exception.CustomErrorCode.FAILED_AUTHENTICATION;
+import static com.team573.gongguri.global.exception.CustomErrorCode.INVALID_REQUEST;
+import static com.team573.gongguri.global.exception.CustomErrorCode.NOT_FOUND_MEMBER;
+import static com.team573.gongguri.global.exception.CustomErrorCode.NOT_FOUND_CHATROOM;
 
 import com.team573.gongguri.domain.chat.entity.ChatRoom;
 import com.team573.gongguri.domain.chat.repository.ChatRoomParticipationRepository;
 import com.team573.gongguri.domain.chat.repository.ChatRoomRepository;
 import com.team573.gongguri.domain.member.entity.Member;
 import com.team573.gongguri.domain.member.repository.MemberRepository;
-import com.team573.gongguri.global.exception.ErrorException;
+import com.team573.gongguri.global.exception.CustomException;
 import com.team573.gongguri.global.security.CustomUserDetails;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -42,7 +42,7 @@ public class ChatSubscriptionInterceptor implements ChannelInterceptor {
 
         // accessor null 체크
         if (accessor == null || accessor.getCommand() == null) {
-            throw new ErrorException(INVALID_REQUEST);
+            throw new CustomException(INVALID_REQUEST);
         }
 
         // 구독 메시지인 경우만 처리
@@ -53,7 +53,7 @@ public class ChatSubscriptionInterceptor implements ChannelInterceptor {
             Authentication authentication = (Authentication) accessor.getUser();
 
             if (authentication == null) {
-                throw new ErrorException(FAILED_AUTHENTICATION);
+                throw new CustomException(FAILED_AUTHENTICATION);
             }
 
             if (authentication.isAuthenticated()) {
@@ -68,12 +68,12 @@ public class ChatSubscriptionInterceptor implements ChannelInterceptor {
 
                 // 회원, 채팅방 불러오기
                 Member member = memberRepository.findByEmail(email)
-                    .orElseThrow(() -> new ErrorException(NOT_FOUND_MEMBER));
+                    .orElseThrow(() -> new CustomException(NOT_FOUND_MEMBER));
                 ChatRoom chatRoom = chatRoomRepository.findById(roomId)
-                    .orElseThrow(() -> new ErrorException(NOT_FOUND_CHATROOM));
+                    .orElseThrow(() -> new CustomException(NOT_FOUND_CHATROOM));
 
                 if (!chatRoomParticipationRepository.existsByChatRoomAndMember(chatRoom, member)) {
-                    throw new ErrorException(NOT_FOUND_MEMBER);
+                    throw new CustomException(NOT_FOUND_MEMBER);
                 }
             }
         }
@@ -88,7 +88,7 @@ public class ChatSubscriptionInterceptor implements ChannelInterceptor {
             String roomIdStr = destination.substring(prefix.length());
             return Long.parseLong(roomIdStr);
         } else {
-            throw new ErrorException(NOT_FOUND_MEMBER);
+            throw new CustomException(NOT_FOUND_MEMBER);
         }
     }
 

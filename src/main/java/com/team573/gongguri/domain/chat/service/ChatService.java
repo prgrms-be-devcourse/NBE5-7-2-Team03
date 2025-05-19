@@ -2,8 +2,8 @@ package com.team573.gongguri.domain.chat.service;
 
 
 import static com.team573.gongguri.domain.chat.mapper.ChatMapper.toChatRoomParticipation;
-import static com.team573.gongguri.global.exception.ErrorCode.NOT_FOUND_CHATROOM;
-import static com.team573.gongguri.global.exception.ErrorCode.NOT_FOUND_MEMBER;
+import static com.team573.gongguri.global.exception.CustomErrorCode.NOT_FOUND_CHATROOM;
+import static com.team573.gongguri.global.exception.CustomErrorCode.NOT_FOUND_MEMBER;
 
 import com.team573.gongguri.domain.chat.dto.ChatMessageRequestDto;
 import com.team573.gongguri.domain.chat.dto.ChatMessageResponseDto;
@@ -17,7 +17,7 @@ import com.team573.gongguri.domain.chat.repository.ChatRoomRepository;
 import com.team573.gongguri.domain.chat.repository.CustomChatMessageRepository;
 import com.team573.gongguri.domain.member.entity.Member;
 import com.team573.gongguri.domain.member.repository.MemberRepository;
-import com.team573.gongguri.global.exception.ErrorException;
+import com.team573.gongguri.global.exception.CustomException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -57,10 +57,10 @@ public class ChatService {
     // 채팅방 참여자 추가
     public void addChatParticipation(Long roomId, String email) {
         Member member = memberRepository.findByEmail(email)
-            .orElseThrow(() -> new ErrorException(NOT_FOUND_MEMBER));
+            .orElseThrow(() -> new CustomException(NOT_FOUND_MEMBER));
 
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
-            .orElseThrow(() -> new ErrorException(NOT_FOUND_CHATROOM));
+            .orElseThrow(() -> new CustomException(NOT_FOUND_CHATROOM));
 
         ChatRoomParticipation createdParticipation = toChatRoomParticipation(member, chatRoom);
 
@@ -70,10 +70,10 @@ public class ChatService {
     // 채팅방 참여자 제거
     public void deleteChatParticipation(Long roomId, String email) {
         Member member = memberRepository.findByEmail(email)
-            .orElseThrow(() -> new ErrorException(NOT_FOUND_MEMBER));
+            .orElseThrow(() -> new CustomException(NOT_FOUND_MEMBER));
 
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
-            .orElseThrow(() -> new ErrorException(NOT_FOUND_CHATROOM));
+            .orElseThrow(() -> new CustomException(NOT_FOUND_CHATROOM));
 
         chatRoomParticipationRepository.deleteByChatRoomAndMember(chatRoom, member);
     }

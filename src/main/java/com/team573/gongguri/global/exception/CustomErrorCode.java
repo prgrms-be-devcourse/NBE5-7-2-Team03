@@ -9,10 +9,11 @@ import static com.team573.gongguri.global.exception.ErrorStatus.UNAUTHORIZED;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.springframework.http.HttpStatus;
 
 @Getter
 @AllArgsConstructor
-public enum ErrorCode {
+public enum CustomErrorCode {
 
     NOT_FOUND_EXAMPLE(NOT_FOUND, "EXAMPLE-001", "존재하지 않는 예시입니다."),
 
@@ -53,5 +54,7 @@ public enum ErrorCode {
     private final String code;
     private final String message;
 
-
+    public HttpStatus getStatus() {
+        return this.errorStatus.getHttpStatus();
+    }
 }

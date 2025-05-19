@@ -18,8 +18,8 @@ import com.team573.gongguri.domain.groupPurchase.repository.GroupPurchaseReposit
 import com.team573.gongguri.domain.member.entity.Member;
 import com.team573.gongguri.domain.member.entity.Univ;
 import com.team573.gongguri.domain.member.repository.MemberRepository;
-import com.team573.gongguri.global.exception.ErrorCode;
-import com.team573.gongguri.global.exception.ErrorException;
+import com.team573.gongguri.global.exception.CustomErrorCode;
+import com.team573.gongguri.global.exception.CustomException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -41,7 +41,7 @@ public class GroupPurchaseService {
     @Transactional
     public GroupPurchaseResponseDto add(GroupPurchaseRequestDto dto, String email) {
         Member writer = memberRepository.findByEmail(email)
-                .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_MEMBER));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.NOT_FOUND_MEMBER));
 
         Univ univ = writer.getUniv();
         ChatRoom chatRoom;
@@ -49,7 +49,7 @@ public class GroupPurchaseService {
             chatRoom = chatService.addChatRoom(email);
         } catch (Exception e) {
             log.error("채팅방 생성 실패", e);
-            throw new ErrorException(ErrorCode.CREATE_FAILED_GROUP_PURCHASE);
+            throw new CustomException(CustomErrorCode.CREATE_FAILED_GROUP_PURCHASE);
         }
 
         GroupPurchase groupPurchase;
@@ -59,7 +59,7 @@ public class GroupPurchaseService {
             groupPurchaseRepository.save(groupPurchase);
         } catch (Exception e) {
             log.error("공동구매 게시글 저장 실패", e);
-            throw new ErrorException(ErrorCode.CREATE_FAILED_GROUP_PURCHASE);
+            throw new CustomException(CustomErrorCode.CREATE_FAILED_GROUP_PURCHASE);
         }
 
         try {
@@ -67,7 +67,7 @@ public class GroupPurchaseService {
             participantRepository.save(participant);
         } catch (Exception e) {
             log.error("작성자를 참여자로 등록 실패", e);
-            throw new ErrorException(ErrorCode.JOIN_FAILED);
+            throw new CustomException(CustomErrorCode.JOIN_FAILED);
         }
 
         int currentParticipants = participantRepository.countByGroupPurchase_GroupId(groupPurchase.getGroupId());
@@ -79,9 +79,9 @@ public class GroupPurchaseService {
     @Transactional(readOnly = true)
     public GroupPurchaseResponseDto get(Long id, String email) {
         Member member = memberRepository.findByEmail(email)
-                .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_MEMBER));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.NOT_FOUND_MEMBER));
         GroupPurchase entity = groupPurchaseRepository.findById(id)
-                .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_GROUP_PURCHASE));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.NOT_FOUND_GROUP_PURCHASE));
         int currentParticipants = participantRepository.countByGroupPurchase_GroupId(id);
         boolean isParticipated = participantRepository.existsByGroupPurchase_GroupIdAndMember_Email(id, email);
         return GroupPurchaseMapper.toDto(entity, currentParticipants, isParticipated);
@@ -90,7 +90,7 @@ public class GroupPurchaseService {
     @Transactional(readOnly = true)
     public List<GroupPurchaseResponseDto> getAll(String email) {
         Member member = memberRepository.findByEmail(email)
-                .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_MEMBER));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.NOT_FOUND_MEMBER));
         return groupPurchaseRepository.findAll().stream()
                 .map(entity -> {
                     int currentParticipants = participantRepository.countByGroupPurchase_GroupId(entity.getGroupId());
@@ -104,7 +104,7 @@ public class GroupPurchaseService {
     public GroupPurchaseResponseDto update(Long id, GroupPurchaseRequestDto dto) {
 
         GroupPurchase entity = groupPurchaseRepository.findById(id)
-                .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_GROUP_PURCHASE));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.NOT_FOUND_GROUP_PURCHASE));
         try {
             entity.update(
                     dto.title(),
@@ -118,7 +118,7 @@ public class GroupPurchaseService {
             entity.setImageUrl(dto.imageUrl());
         } catch (Exception e) {
             log.error("공동구매 수정 실패", e);
-            throw new ErrorException(ErrorCode.UPDATE_FAILED_GROUP_PURCHASE);
+            throw new CustomException(CustomErrorCode.UPDATE_FAILED_GROUP_PURCHASE);
         }
         return GroupPurchaseMapper.toDto(entity);
     }
@@ -126,26 +126,26 @@ public class GroupPurchaseService {
     @Transactional
     public void delete(Long id) {
         GroupPurchase entity = groupPurchaseRepository.findById(id)
-                .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_GROUP_PURCHASE));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.NOT_FOUND_GROUP_PURCHASE));
         groupPurchaseRepository.delete(entity);
     }
 
     @Transactional
     public void join(Long groupId, String email) {
         Member member = memberRepository.findByEmail(email)
-                .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_MEMBER));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.NOT_FOUND_MEMBER));
 
         GroupPurchase groupPurchase = groupPurchaseRepository.findById(groupId)
-                .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_GROUP_PURCHASE));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.NOT_FOUND_GROUP_PURCHASE));
 
         int currentCount = participantRepository.countByGroupPurchase_GroupId(groupId);
         if (currentCount >= groupPurchase.getMaxParticipants()) {
-            throw new ErrorException(ErrorCode.PARTICIPANT_LIMIT_REACHED);
+            throw new CustomException(CustomErrorCode.PARTICIPANT_LIMIT_REACHED);
         }
 
         boolean alreadyJoined = participantRepository.existsByGroupPurchase_GroupIdAndMember_Email(groupId, email);
         if (alreadyJoined) {
-            throw new ErrorException(ErrorCode.ALREADY_JOINED);
+            throw new CustomException(CustomErrorCode.ALREADY_JOINED);
         }
 
         try {
@@ -154,7 +154,7 @@ public class GroupPurchaseService {
             chatService.addChatParticipation(groupPurchase.getChatRoom().getChatRoomId(), email);
         } catch (Exception e) {
             log.error("참여자 등록 실패", e);
-            throw new ErrorException(ErrorCode.JOIN_FAILED);
+            throw new CustomException(CustomErrorCode.JOIN_FAILED);
         }
 
         int afterJoinCount = currentCount + 1;

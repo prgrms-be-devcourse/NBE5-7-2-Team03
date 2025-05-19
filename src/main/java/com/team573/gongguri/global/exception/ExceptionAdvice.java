@@ -14,36 +14,35 @@ import org.springframework.web.method.HandlerMethod;
 @ControllerAdvice
 public class ExceptionAdvice {
 
-    @ExceptionHandler(ErrorException.class)
+    @ExceptionHandler(CustomException.class)
     public Object handleErrorException(
-        ErrorException e,
+        CustomException e,
         Model model,
         HandlerMethod handlerMethod  // 현재 실행 중인 컨트롤러 메서드 정보
     ) {
-        // @ResponseBody 또는 @RestController가 있는지 확인
+        // @ResponseBody 또는 @RestController 가 있는지 확인
         boolean isApiRequest = AnnotatedElementUtils.hasAnnotation(handlerMethod.getBeanType(), ResponseBody.class);
-        ErrorCode errorCode = e.getErrorCode();
+        CustomErrorCode customErrorCode = e.getCustomErrorCode();
 
         // 에러 로깅
-        log.error(errorCode.getMessage(), e);
+        log.error(customErrorCode.getMessage(), e);
 
         // Json 응답 (RestController)
         if (isApiRequest) {
-            HttpStatus httpStatus = switch (errorCode.getErrorStatus()) {
-                case BAD_REQUEST -> HttpStatus.BAD_REQUEST;
-                case FORBIDDEN -> HttpStatus.FORBIDDEN;
-                case NOT_FOUND -> HttpStatus.NOT_FOUND;
-                case CONFLICT -> HttpStatus.CONFLICT;
-                case UNAUTHORIZED -> HttpStatus.UNAUTHORIZED;
-            };
+            HttpStatus httpStatus = customErrorCode.getStatus();
+
+            CustomErrorResponse response = CustomErrorResponse.builder()
+                .code(customErrorCode.getCode())
+                .message(customErrorCode.getMessage())
+                .build();
 
             return ResponseEntity.status(httpStatus)
-                .body(new ErrorResponse(errorCode.getCode(), errorCode.getMessage()));
+                .body(response);
         }
 
         // HTML 응답
         else {
-            model.addAttribute("message", errorCode.getMessage());
+            model.addAttribute("message", customErrorCode.getMessage());
             return "error/alert";
         }
     }
