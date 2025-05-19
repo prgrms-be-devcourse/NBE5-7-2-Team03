@@ -4,6 +4,7 @@ import static com.team573.gongguri.global.exception.CustomErrorCode.CANNOT_CANCE
 import static com.team573.gongguri.global.exception.CustomErrorCode.NOT_FOUND_PARTICIPANT;
 import static com.team573.gongguri.global.exception.CustomErrorCode.UNAUTHORIZED_GROUP_PURCHASE_MANAGE;
 
+import com.team573.gongguri.domain.chat.service.ChatService;
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseParticipantResponseDto;
 import com.team573.gongguri.domain.groupPurchase.entity.GroupPurchaseParticipant;
 import com.team573.gongguri.domain.groupPurchase.mapper.GroupPurchaseParticipantMapper;
@@ -22,6 +23,7 @@ public class GroupPurchaseParticipantService {
 
     private final GroupPurchaseParticipantRepository groupPurchaseParticipantRepository;
     private final GroupPurchaseRepository groupPurchaseRepository;
+    private final ChatService chatService;
 
     @Transactional
     public void cancelParticipation(Long groupPurchaseId, Long participantId, Long memberId) {
@@ -33,6 +35,7 @@ public class GroupPurchaseParticipantService {
             throw new CustomException(CANNOT_CANCEL_PAID_PARTICIPANT);
         }
 
+        chatService.deleteChatParticipation(groupPurchaseId, memberId);
         participant.cancelMember();
         groupPurchaseParticipantRepository.save(participant);
     }
