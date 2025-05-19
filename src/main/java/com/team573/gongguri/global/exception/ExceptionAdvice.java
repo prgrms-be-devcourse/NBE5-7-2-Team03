@@ -21,7 +21,7 @@ public class ExceptionAdvice {
         HandlerMethod handlerMethod  // 현재 실행 중인 컨트롤러 메서드 정보
     ) {
         // @ResponseBody 또는 @RestController가 있는지 확인
-        boolean isApiRequest = AnnotatedElementUtils.hasAnnotation(handlerMethod.getMethod(), ResponseBody.class);
+        boolean isApiRequest = AnnotatedElementUtils.hasAnnotation(handlerMethod.getBeanType(), ResponseBody.class);
         ErrorCode errorCode = e.getErrorCode();
 
         // 에러 로깅
