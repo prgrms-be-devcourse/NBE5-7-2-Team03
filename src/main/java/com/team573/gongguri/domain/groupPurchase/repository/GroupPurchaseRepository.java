@@ -34,6 +34,7 @@ public interface GroupPurchaseRepository extends JpaRepository<GroupPurchase, Lo
             AND gpp.participationStatus = 'JOINED'
         WHERE (:cursorId IS NULL OR gp.groupId < :cursorId)
         AND (gp.progressStatus IN :statuses)
+        AND (gp.isDeleted = false)
         ORDER BY gp.groupId DESC
     """)
     List<GroupPurchase> findWithCursorAndParticipantCount(

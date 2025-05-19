@@ -23,6 +23,7 @@ public class CustomChatMessageRepository {
             return Collections.emptyMap();
         }
 
+        // 최근 메세지 조회 조건 설정
         Aggregation aggregation = this.createLatestMessageAggregation(chatRoomIds);
 
         // Document로 결과 받기
@@ -35,6 +36,7 @@ public class CustomChatMessageRepository {
         return this.resultsToMap(results);
     }
 
+    // 최근 메세지 조회 조건 설정
     private Aggregation createLatestMessageAggregation(List<Long> chatRoomIds) {
         return Aggregation.newAggregation(
             Aggregation.match(Criteria.where("room_id").in(chatRoomIds)),
@@ -44,6 +46,7 @@ public class CustomChatMessageRepository {
         );
     }
 
+    // Map으로 변환
     private Map<Long, String> resultsToMap(AggregationResults<Document> results) {
         Map<Long, String> latestMessageContents = new HashMap<>();
 
