@@ -1,6 +1,8 @@
 package com.team573.gongguri.domain.groupPurchase.repository;
 
+import com.team573.gongguri.domain.groupPurchase.entity.GroupPurchase;
 import com.team573.gongguri.domain.groupPurchase.entity.GroupPurchaseParticipant;
+import com.team573.gongguri.domain.groupPurchase.entity.ParticipationStatus;
 import com.team573.gongguri.domain.groupPurchase.entity.ProgressStatus;
 import java.util.List;
 import org.springframework.data.domain.Pageable;
@@ -34,5 +36,10 @@ public interface GroupPurchaseParticipantRepository extends JpaRepository<GroupP
         @Param("deposit") Boolean deposit,
         @Param("memberId") Long memberId,
         Pageable pageable
+    );
+
+    Long countByGroupPurchaseAndParticipationStatus(
+        GroupPurchase groupPurchase,
+        ParticipationStatus participationStatus
     );
 }

@@ -9,12 +9,13 @@ import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseWithChatRespon
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseWithParticipantCountDto;
 import com.team573.gongguri.domain.groupPurchase.entity.GroupPurchase;
 import com.team573.gongguri.domain.groupPurchase.entity.GroupPurchaseParticipant;
+import com.team573.gongguri.domain.groupPurchase.entity.ParticipationStatus;
 import com.team573.gongguri.domain.groupPurchase.entity.ProgressStatus;
 import com.team573.gongguri.domain.groupPurchase.entity.PurchaseFilter;
 import com.team573.gongguri.domain.groupPurchase.mapper.GroupPurchaseMapper;
 import com.team573.gongguri.domain.groupPurchase.mapper.GroupPurchaseParticipantMapper;
-import com.team573.gongguri.domain.groupPurchase.repository.GroupPurchaseParticipantRepository;
 import com.team573.gongguri.domain.groupPurchase.repository.GroupPurchaseJpqlRepository;
+import com.team573.gongguri.domain.groupPurchase.repository.GroupPurchaseParticipantRepository;
 import com.team573.gongguri.domain.groupPurchase.repository.GroupPurchaseRepository;
 import com.team573.gongguri.domain.member.entity.Member;
 import com.team573.gongguri.domain.member.entity.Univ;
@@ -26,6 +27,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,6 +40,7 @@ public class GroupPurchaseService {
     private final MemberRepository memberRepository;
     private final ChatService chatService;
     private final GroupPurchaseJpqlRepository groupPurchaseJpqlRepository;
+    private final GroupPurchaseParticipantRepository groupPurchaseParticipantRepository;
 
     @Transactional
     public GroupPurchaseResponseDto add(GroupPurchaseRequestDto dto, String email) {
@@ -182,32 +185,69 @@ public class GroupPurchaseService {
         }
     }
 
+    @Transactional(readOnly = true)
     public List<GroupPurchaseWithChatResponseDto> getWithMessage(
         Integer size,
         Long cursorId,
-        List<ProgressStatus> statuses,
+        PurchaseFilter purchaseFilter,
         Long memberId
     ) {
-        // 공동 구매 조회
-        List<GroupPurchaseWithParticipantCountDto> groupPurchases
-            = groupPurchaseJpqlRepository.findWithCursorAndParticipantCount(cursorId, memberId, statuses, size);
+        // 필터로 공동 구매 상태 구하기
+        List<ProgressStatus> statuses = getStatusesByFilter(purchaseFilter);
 
-        // 조회한 공동 구매 채팅 메시지 조회
-        List<Long> chatRoomIds = groupPurchases.stream()
-            .map(GroupPurchaseWithParticipantCountDto::chatRoomId)
-            .toList();
+        PageRequest pageable = PageRequest.of(0, size);
+
+        // 공동 구매 조회
+        List<GroupPurchase> groupPurchases
+            = groupPurchaseRepository.findWithCursorAndParticipantCount(cursorId, memberId, statuses, pageable);
 
         // 맵으로 채팅 메시지 가져오기
-        Map<Long, String> firstMessages = chatService.getFirstMessageMap(chatRoomIds);
+        Map<Long, String> firstMessages = getFirstMessages(groupPurchases);
 
         return groupPurchases.stream()
-            .map(groupPurchase -> GroupPurchaseMapper.toWithMessageResponseDto(groupPurchase,
-                firstMessages))
+            .map(groupPurchase -> GroupPurchaseMapper.toDtoWithMessage(
+                groupPurchase,
+                countParticipantsByStatus(groupPurchase, ParticipationStatus.JOINED),
+                firstMessages
+                )
+            )
             .toList();
     }
 
+    // 상태 조건 분리
+    private List<ProgressStatus> getStatusesByFilter(PurchaseFilter filter) {
+        return switch (filter) {
+            case ONGOING -> List.of(ProgressStatus.RECRUITING, ProgressStatus.CLOSED);
+            case COMPLETED -> List.of(ProgressStatus.COMPLETED);
+            default -> List.of(ProgressStatus.RECRUITING, ProgressStatus.CLOSED, ProgressStatus.COMPLETED);
+        };
+    }
+
+    // 조회한 공동 구매 채팅 메시지 조회
+    private Map<Long, String> getFirstMessages(List<GroupPurchase> groupPurchases) {
+        List<Long> chatRoomIds = groupPurchases.stream()
+            .map(groupPurchase -> groupPurchase.getChatRoom().getChatRoomId())
+            .toList();
+        return chatService.getFirstMessageMap(chatRoomIds);
+    }
+
+    // ParticipationStatus 로 해당 공동 구매 참여자 수 조회
+    private Long countParticipantsByStatus(GroupPurchase groupPurchase, ParticipationStatus status) {
+        return groupPurchaseParticipantRepository.countByGroupPurchaseAndParticipationStatus(
+            groupPurchase,
+            status
+        );
+    }
+
+    @Transactional(readOnly = true)
     public GroupPurchaseSimpleResponseDto getSimpleInfo(Long groupPurchaseId) {
-        return groupPurchaseJpqlRepository.getSimple(groupPurchaseId);
+        GroupPurchase groupPurchase = groupPurchaseRepository.findById(groupPurchaseId)
+            .orElseThrow(() -> new CustomException(CustomErrorCode.NOT_FOUND_GROUP_PURCHASE));
+
+        Long participantCount
+            = groupPurchaseParticipantRepository.countByGroupPurchaseAndParticipationStatus(groupPurchase, ParticipationStatus.JOINED);
+
+        return GroupPurchaseMapper.toDtoWithCount(groupPurchase, participantCount);
     }
 
     //특정 멤버가 작성한 공동구매글 조회

@@ -5,6 +5,7 @@ import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseRequestDto;
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseResponseDto;
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseWithChatResponseDto;
 import com.team573.gongguri.domain.groupPurchase.entity.ProgressStatus;
+import com.team573.gongguri.domain.groupPurchase.entity.PurchaseFilter;
 import com.team573.gongguri.domain.groupPurchase.service.GroupPurchaseParticipantService;
 import com.team573.gongguri.domain.groupPurchase.service.GroupPurchaseService;
 import com.team573.gongguri.global.security.CustomUserDetails;
@@ -92,23 +93,12 @@ public class GroupPurchaseController {
     @GetMapping("/chat")
     public ResponseEntity<List<GroupPurchaseWithChatResponseDto>> getWithChat(
             @RequestParam(required = false, name = "cursor") Long cursorGroupPurchaseId,
-            @RequestParam(required = false) String progressStatus,
+            @RequestParam(required = false, defaultValue = "ALL", name = "progressStatus") PurchaseFilter purchaseFilter,
             @RequestParam(defaultValue = "10") int size,
             @AuthenticationPrincipal CustomUserDetails customUserDetails
     ) {
-        List<ProgressStatus> progressStatuses = new ArrayList<>();
-
-        if (progressStatus != null) {
-            if (progressStatus.equals("RECRUITING")) {
-                progressStatuses.add(ProgressStatus.RECRUITING);
-                progressStatuses.add(ProgressStatus.CLOSED);
-            } else if (progressStatus.equals("COMPLETED")) {
-                progressStatuses.add(ProgressStatus.COMPLETED);
-            }
-        }
-
         List<GroupPurchaseWithChatResponseDto> withMessages
-                = groupPurchaseService.getWithMessage(size, cursorGroupPurchaseId, progressStatuses, customUserDetails.getMemberId());
+                = groupPurchaseService.getWithMessage(size, cursorGroupPurchaseId, purchaseFilter, customUserDetails.getMemberId());
         return ResponseEntity.ok(withMessages);
     }
 

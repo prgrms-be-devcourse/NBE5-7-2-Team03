@@ -49,24 +49,34 @@ public class GroupPurchaseParticipantService {
         groupPurchaseParticipantRepository.save(participant);
     }
 
+    @Transactional(readOnly = true)
     public List<GroupPurchaseParticipantResponseDto> getParticipants(
         Long groupPurchaseId,
         Long cursorParticipantId,
         Boolean deposit,
         Long memberId,
-        int size) {
-
+        int size
+    ) {
         PageRequest pageRequest = PageRequest.of(0, size);
+
         List<GroupPurchaseParticipant> participants = groupPurchaseParticipantRepository.findParticipantsByCursor(
-            groupPurchaseId, cursorParticipantId, deposit, memberId, pageRequest);
+            groupPurchaseId,
+            cursorParticipantId,
+            deposit,
+            memberId,
+            pageRequest
+        );
 
         return participants.stream()
             .map(GroupPurchaseParticipantMapper::toDto)
             .toList();
     }
 
-    private GroupPurchaseParticipant getParticipantToManaged(Long groupPurchaseId,
-        Long participantId, Long memberId) {
+    private GroupPurchaseParticipant getParticipantToManaged(
+        Long groupPurchaseId,
+        Long participantId,
+        Long memberId
+    ) {
         // member가 공동 구매 관리자 인지 확인
         if (!groupPurchaseRepository.existsByGroupIdAndMember_MemberId(groupPurchaseId, memberId)) {
             throw new CustomException(UNAUTHORIZED_GROUP_PURCHASE_MANAGE);

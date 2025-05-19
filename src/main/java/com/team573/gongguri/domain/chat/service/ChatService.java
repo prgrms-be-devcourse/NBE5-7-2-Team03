@@ -40,8 +40,8 @@ public class ChatService {
         Long roomId,
         ChatMessageRequestDto requestDto
     ) {
-        ChatMessage createdMessage = ChatMapper.toChatMessage(roomId, requestDto.nickname(),
-            requestDto.content());
+        ChatMessage createdMessage
+            = ChatMapper.toChatMessage(roomId, requestDto.nickname(), requestDto.content());
 
         chatMessageRepository.save(createdMessage);
 
