@@ -32,6 +32,8 @@ public class ReviewService {
 
         Review createdReview = reviewRepository.save(ReviewMapper.toEntity(groupPurchase, member, like));
 
+        member.updateLikeCount(like);
+
         return createdReview.getReviewId();
     }
 }
