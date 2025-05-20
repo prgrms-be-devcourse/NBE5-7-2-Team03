@@ -1,5 +1,7 @@
 package com.team573.gongguri.domain.groupPurchase.service;
 
+import com.team573.gongguri.global.exception.CustomErrorCode;
+import com.team573.gongguri.global.exception.CustomException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,9 +17,9 @@ import java.util.UUID;
 public class ImageUploadService {
     private static final String UPLOAD_DIR = System.getProperty("user.home") + "/gongguri-uploads";
 
-    public Map<String, String> uploadImage(MultipartFile file) throws IOException {
+    public Map<String, String> uploadImage(MultipartFile file) {
         if (file == null || file.isEmpty()) {
-            throw new IllegalArgumentException("이미지 파일이 비어있습니다.");
+            throw new CustomException(CustomErrorCode.INVALID_IMAGE_FILE);
         }
 
         String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
@@ -29,7 +31,12 @@ public class ImageUploadService {
         }
 
         File dest = new File(uploadPath, filename);
-        file.transferTo(dest);
+        try {
+            file.transferTo(dest);
+        } catch (IOException e) {
+            log.error("파일 저장 실패", e);
+            throw new CustomException(CustomErrorCode.IMAGE_UPLOAD_FAILED);
+        }
 
         String imageUrl = "/uploads/" + filename;
         log.info("이미지 저장 완료: {}", dest.getAbsolutePath());

@@ -16,6 +16,7 @@ import com.team573.gongguri.domain.groupPurchase.repository.GroupPurchaseReposit
 import com.team573.gongguri.domain.member.entity.Member;
 import com.team573.gongguri.domain.member.entity.Univ;
 import com.team573.gongguri.domain.member.repository.MemberRepository;
+import com.team573.gongguri.domain.member.service.MemberService;
 import com.team573.gongguri.global.exception.CustomErrorCode;
 import com.team573.gongguri.global.exception.CustomException;
 import java.util.List;
@@ -37,12 +38,8 @@ public class GroupPurchaseService {
     private final ChatService chatService;
     private final GroupPurchaseJpqlRepository groupPurchaseJpqlRepository;
     private final GroupPurchaseParticipantRepository groupPurchaseParticipantRepository;
+    private final MemberService memberService;
 
-    private Member getMemberById(Long memberId) {
-        Member writer = memberRepository.findById(memberId)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.NOT_FOUND_MEMBER));
-        return writer;
-    }
 
     private GroupPurchase getActiveGroupPurchase(Long id) {
         GroupPurchase groupPurchase = groupPurchaseRepository.findByGroupIdAndIsDeletedFalse(id)
@@ -67,7 +64,7 @@ public class GroupPurchaseService {
 
     @Transactional
     public GroupPurchaseCreateResponseDto add(GroupPurchaseRequestDto dto, Long memberId) {
-        Member writer = getMemberById(memberId);
+        Member writer = memberService.getMemberById(memberId);
 
         Univ univ = writer.getUniv();
         ChatRoom chatRoom;
@@ -112,7 +109,7 @@ public class GroupPurchaseService {
 
         return groupPurchases.stream()
                 .map(GroupPurchaseMapper::toListDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Transactional
@@ -145,11 +142,11 @@ public class GroupPurchaseService {
 
     @Transactional
     public void join(Long groupId, Long memberId) {
-        Member member = getMemberById(memberId);
+        Member member = memberService.getMemberById(memberId);
 
         GroupPurchase groupPurchase = getActiveGroupPurchase(groupId);
 
-        int currentCount = getCurrentParticipantsCount(groupId);
+        int currentCount = countParticipantsByStatus(groupPurchase, ParticipationStatus.JOINED).intValue();
         if (currentCount >= groupPurchase.getMaxParticipants()) {
             throw new CustomException(CustomErrorCode.PARTICIPANT_LIMIT_REACHED);
         }
@@ -251,7 +248,7 @@ public class GroupPurchaseService {
 
         return purchases.stream()
                 .map(purchase -> {
-                    int currentParticipants = getCurrentParticipantsCount(purchase.getGroupId());
+                    int currentParticipants = countParticipantsByStatus(purchase, ParticipationStatus.JOINED).intValue();
                     return GroupPurchaseMapper.toFindCreatedDto(purchase, currentParticipants);
                 })
                 .toList();

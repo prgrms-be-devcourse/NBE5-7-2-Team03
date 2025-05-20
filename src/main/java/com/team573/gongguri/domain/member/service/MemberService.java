@@ -55,4 +55,9 @@ public class MemberService {
             throw new CustomException(CustomErrorCode.NICKNAME_ALREADY_EXISTS);
         }
     }
+
+    public Member getMemberById(Long memberId) {
+        return memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.NOT_FOUND_MEMBER));
+    }
 }

@@ -50,9 +50,11 @@ public class GroupPurchaseController {
     public ResponseEntity<GroupPurchaseDetailResponseDto> get(
             @PathVariable Long id,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        Long memberId = userDetails.getMemberId();;
+        Long memberId = userDetails.getMemberId();
         return ResponseEntity.ok(groupPurchaseService.get(id, memberId));
     }
+
+
 
     @PutMapping("/{id}")
     public ResponseEntity<GroupPurchaseUpdateResponseDto> update(

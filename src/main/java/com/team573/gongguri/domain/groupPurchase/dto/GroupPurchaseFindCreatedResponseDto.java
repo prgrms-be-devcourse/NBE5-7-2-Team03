@@ -11,4 +11,4 @@ public record GroupPurchaseFindCreatedResponseDto(
         int currentParticipants,
         String progressStatus,
         String imageUrl
-) { }
+) {}
