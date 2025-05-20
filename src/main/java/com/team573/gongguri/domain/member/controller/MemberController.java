@@ -27,7 +27,7 @@ public class MemberController {
     public String showJoinForm() {return "/member/join";}
 
     @GetMapping("/")
-    public String showIndexForm() {return "/member/index";}
+    public String showIndexForm() {return "redirect:/group-purchase";}
 
 
     @PostMapping("/join")

@@ -1,4 +1,4 @@
-/* 참여자 관리 페이지 스타일 */
+
 :root {
   --primary-color: #619bff;
   --secondary-color: #f1f5f9;
@@ -22,8 +22,8 @@ th { background-color: #f2f2f2; }
   max-width: var(--mobile-width);
   margin: 0 auto;
   padding: 0 1rem;
-  padding-bottom: 70px; /* Space for bottom navigation */
-  padding-top: 60px; /* Space for top bar */
+  padding-bottom: 70px;
+  padding-top: 60px;
 }
 
 .status-filter {
