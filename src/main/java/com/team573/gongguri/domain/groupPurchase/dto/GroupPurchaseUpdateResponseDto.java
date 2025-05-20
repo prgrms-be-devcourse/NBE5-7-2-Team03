@@ -3,12 +3,12 @@ package com.team573.gongguri.domain.groupPurchase.dto;
 import lombok.Builder;
 
 @Builder
-public record GroupPurchaseListResponseDto (
+public record GroupPurchaseUpdateResponseDto(
         Long id,
         String title,
+        String content,
         int price,
         int maxParticipants,
-        int currentParticipants,
         String progressStatus,
         String imageUrl
 ) {}

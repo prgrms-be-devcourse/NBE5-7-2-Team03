@@ -31,6 +31,7 @@ public enum CustomErrorCode {
     PARTICIPANT_LIMIT_REACHED(BAD_REQUEST, "PARTICIPANT-003", "모집 인원이 모두 찼습니다."),
     NOT_FOUND_PARTICIPANT(NOT_FOUND, "PARTICIPANT-004", "존재하지 않는 공동 구매 참가자입니다."),
     CANNOT_CANCEL_PAID_PARTICIPANT(FORBIDDEN, "PARTICIPANT-005", "이미 입금한 사용자는 강퇴할 수 없습니다."),
+    IS_NOT_COMPLETED(BAD_REQUEST, "PARTICIPANT-006", "완료된 공동 구매가 아닙니다."),
 
     // COMMON
     INVALID_REQUEST(BAD_REQUEST, "COMMON-001", "잘못된 요청입니다."),
@@ -51,8 +52,11 @@ public enum CustomErrorCode {
     CREATE_FAILED_CHATROOM(CONFLICT, "CHAT-003", " 생성에 실패했습니다."),
 
     //UNIV
-    NOT_FOUND_UNIV(NOT_FOUND, "UNIV-001", "해당 대학교 정보가 존재하지 않습니다.");
+    NOT_FOUND_UNIV(NOT_FOUND, "UNIV-001", "해당 대학교 정보가 존재하지 않습니다."),
 
+    //IMAGE_UPLOAD
+    INVALID_IMAGE_FILE(BAD_REQUEST, "IMAGE-001", "잘못된 이미지 파일입니다."),
+    IMAGE_UPLOAD_FAILED(CONFLICT, "IMAGE-002", "이미지 업로드에 실패했습니다.");
 
     private final ErrorStatus errorStatus;
     private final String code;

@@ -1,5 +1,6 @@
 package com.team573.gongguri.domain.myPage.service;
 
+
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseListResponseDto;
 import com.team573.gongguri.domain.groupPurchase.entity.GroupPurchaseParticipant;
 import com.team573.gongguri.domain.groupPurchase.entity.ProgressStatus;
