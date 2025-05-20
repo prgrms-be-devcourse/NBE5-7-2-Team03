@@ -14,7 +14,6 @@
 <body>
 <div th:replace="~{fragments/layout :: mobileContainer}">
   <div th:fragment="content">
-    <!-- Top bar component -->
     <div th:replace="~{fragments/topbar :: topBar('채팅방')}"></div>
 
     <main class="container">
@@ -29,7 +28,6 @@
                   th:classappend="| ${groupPurchase.progressStatus == 'RECRUITING' ? 'status-open'
                           : (groupPurchase.progressStatus == 'CLOSED' ? 'status-closed' : 'status-done')} |">
                             </span>
-<!--            <span class="status-badge" th:classappend="${groupPurchase.progressStatus == 'OPEN' ? 'status-open' : 'status-done'}" th:text="${groupPurchase.progressStatus}"></span>-->
           </div>
           <div class="purchase-footer">
             <span><strong>₩<span th:text="${#numbers.formatInteger(groupPurchase.price, 3, 'COMMA')}"></span></strong></span>

@@ -1,7 +1,6 @@
 package com.team573.gongguri.domain.chat.service;
 
 
-import static com.team573.gongguri.domain.chat.mapper.ChatMapper.toChatRoomParticipation;
 import static com.team573.gongguri.global.exception.CustomErrorCode.NOT_FOUND_CHATROOM;
 import static com.team573.gongguri.global.exception.CustomErrorCode.NOT_FOUND_MEMBER;
 
@@ -10,7 +9,8 @@ import com.team573.gongguri.domain.chat.dto.ChatMessageResponseDto;
 import com.team573.gongguri.domain.chat.entity.ChatMessage;
 import com.team573.gongguri.domain.chat.entity.ChatRoom;
 import com.team573.gongguri.domain.chat.entity.ChatRoomParticipation;
-import com.team573.gongguri.domain.chat.mapper.ChatMapper;
+import com.team573.gongguri.domain.chat.mapper.ChatMessageMapper;
+import com.team573.gongguri.domain.chat.mapper.ChatRoomMapper;
 import com.team573.gongguri.domain.chat.repository.ChatMessageRepository;
 import com.team573.gongguri.domain.chat.repository.ChatRoomParticipationRepository;
 import com.team573.gongguri.domain.chat.repository.ChatRoomRepository;
@@ -41,11 +41,11 @@ public class ChatService {
         ChatMessageRequestDto requestDto
     ) {
         ChatMessage createdMessage
-            = ChatMapper.toChatMessage(roomId, requestDto.nickname(), requestDto.content());
+            = ChatMessageMapper.toChatMessage(roomId, requestDto.nickname(), requestDto.content());
 
         chatMessageRepository.save(createdMessage);
 
-        return ChatMapper.toChatMessageResponseDto(createdMessage);
+        return ChatMessageMapper.toDto(createdMessage);
     }
 
     // 채팅방 생성
@@ -63,7 +63,7 @@ public class ChatService {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
             .orElseThrow(() -> new CustomException(NOT_FOUND_CHATROOM));
 
-        ChatRoomParticipation createdParticipation = toChatRoomParticipation(member, chatRoom);
+        ChatRoomParticipation createdParticipation = ChatRoomMapper.toParticipationEntity(member, chatRoom);
 
         chatRoomParticipationRepository.save(createdParticipation);
     }
@@ -100,10 +100,11 @@ public class ChatService {
         }
 
         return messages.stream()
-            .map(ChatMapper::toChatMessageResponseDto)
+            .map(ChatMessageMapper::toDto)
             .toList();
     }
 
+    // 가장 최근 메시지 조회
     public Map<Long, String> getFirstMessageMap(List<Long> chatRoomIds) {
         return customChatMessageRepository.findLatestMessageByRoomIds(chatRoomIds);
     }

@@ -59,11 +59,11 @@ public class ChatSubscriptionInterceptor implements ChannelInterceptor {
         }
 
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        String email = userDetails.getUsername();
+        Long memberId = userDetails.getMemberId();
         String destination = accessor.getDestination();
         Long roomId = extractRoomId(destination);
 
-        Member member = memberRepository.findByEmail(email)
+        Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new CustomException(NOT_FOUND_MEMBER));
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
             .orElseThrow(() -> new CustomException(NOT_FOUND_CHATROOM));
