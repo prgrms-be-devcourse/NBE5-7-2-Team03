@@ -1,11 +1,7 @@
 package com.team573.gongguri.domain.groupPurchase.mapper;
 
 import com.team573.gongguri.domain.chat.entity.ChatRoom;
-import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseSimpleResponseDto;
-import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseWithChatResponseDto;
-import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseRequestDto;
-import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseResponseDto;
-import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseWithParticipantCountDto;
+import com.team573.gongguri.domain.groupPurchase.dto.*;
 import com.team573.gongguri.domain.groupPurchase.entity.GroupPurchase;
 import com.team573.gongguri.domain.groupPurchase.entity.ProgressStatus;
 import com.team573.gongguri.domain.member.entity.Member;
@@ -92,6 +88,17 @@ public class GroupPurchaseMapper {
             .imageUrl(groupPurchase.getImageUrl())
             .price(groupPurchase.getPrice())
             .build();
+    }
+    public static GroupPurchaseListResponseDto toListDto(GroupPurchase purchase, int currentParticipants) {
+        return GroupPurchaseListResponseDto.builder()
+                .id(purchase.getGroupId())
+                .title(purchase.getTitle())
+                .price(purchase.getPrice())
+                .progressStatus(purchase.getProgressStatus().name())
+                .currentParticipants(currentParticipants)
+                .maxParticipants(purchase.getMaxParticipants())
+                .imageUrl(purchase.getImageUrl()) // 없으면 null 처리
+                .build();
     }
 
 }
