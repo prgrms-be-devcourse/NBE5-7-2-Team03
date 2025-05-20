@@ -28,12 +28,12 @@ th { background-color: #f2f2f2; }
   margin-bottom: 1rem;
   justify-content: center;
   position: fixed;
-  top: 60px; /* .top-bar 아래 */
+  top: 60px;
   left: 50%;
   transform: translateX(-50%);
   width: 100%;
   max-width: var(--mobile-width);
-  background-color: white; /* 배경 없으면 겹쳐 보일 수 있음 */
+  background-color: white;
   z-index: 999;
   padding: 0.5rem 1rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
@@ -147,7 +147,7 @@ th { background-color: #f2f2f2; }
 
 .add-btn {
   position: fixed;
-  right: calc((100vw - 390px) / 2); /* 모바일 우측 기준 */
+  right: calc((100vw - 390px) / 2);
   bottom: 80px;
   width: 48px;
   height: 48px;
@@ -170,6 +170,6 @@ th { background-color: #f2f2f2; }
   max-width: var(--mobile-width);
   margin: 0 auto;
   padding: 0 1rem;
-  padding-bottom: 70px; /* Space for bottom navigation */
-  padding-top: 120px; /* top-bar(60px) + status-filter(대략 60px) 만큼 */
+  padding-bottom: 70px;
+  padding-top: 120px;
 }
