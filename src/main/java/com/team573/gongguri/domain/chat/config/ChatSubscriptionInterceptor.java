@@ -1,16 +1,16 @@
 package com.team573.gongguri.domain.chat.config;
 
-import static com.team573.gongguri.global.exception.ErrorCode.FAILED_AUTHENTICATION;
-import static com.team573.gongguri.global.exception.ErrorCode.INVALID_REQUEST;
-import static com.team573.gongguri.global.exception.ErrorCode.NOT_FOUND_MEMBER;
-import static com.team573.gongguri.global.exception.ErrorCode.NOT_FOUND_CHATROOM;
+import static com.team573.gongguri.global.exception.CustomErrorCode.FAILED_AUTHENTICATION;
+import static com.team573.gongguri.global.exception.CustomErrorCode.INVALID_REQUEST;
+import static com.team573.gongguri.global.exception.CustomErrorCode.NOT_FOUND_MEMBER;
+import static com.team573.gongguri.global.exception.CustomErrorCode.NOT_FOUND_CHATROOM;
 
 import com.team573.gongguri.domain.chat.entity.ChatRoom;
 import com.team573.gongguri.domain.chat.repository.ChatRoomParticipationRepository;
 import com.team573.gongguri.domain.chat.repository.ChatRoomRepository;
 import com.team573.gongguri.domain.member.entity.Member;
 import com.team573.gongguri.domain.member.repository.MemberRepository;
-import com.team573.gongguri.global.exception.ErrorException;
+import com.team573.gongguri.global.exception.CustomException;
 import com.team573.gongguri.global.security.CustomUserDetails;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -35,47 +35,42 @@ public class ChatSubscriptionInterceptor implements ChannelInterceptor {
 
     @Override
     public Message<?> preSend(@NonNull Message<?> message, @NonNull MessageChannel channel) {
-
         log.info("채팅방 검증 시작");
 
         StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
 
         // accessor null 체크
         if (accessor == null || accessor.getCommand() == null) {
-            throw new ErrorException(INVALID_REQUEST);
+            log.error(INVALID_REQUEST.getMessage());
+            throw new CustomException(INVALID_REQUEST);
         }
 
-        // 구독 메시지인 경우만 처리
-        if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
-            log.info("구독 검증 시작");
+        // 구독이 아닌 경우 검증 건너뜀
+        if (!StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
+            return message;
+        }
 
-            // 현재 인증된 사용자 정보 가져오기
-            Authentication authentication = (Authentication) accessor.getUser();
+        log.info("구독 검증 시작");
 
-            if (authentication == null) {
-                throw new ErrorException(FAILED_AUTHENTICATION);
-            }
+        Authentication authentication = (Authentication) accessor.getUser();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            log.error(FAILED_AUTHENTICATION.getMessage());
+            throw new CustomException(FAILED_AUTHENTICATION);
+        }
 
-            if (authentication.isAuthenticated()) {
-                CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        String email = userDetails.getUsername();
+        String destination = accessor.getDestination();
+        Long roomId = extractRoomId(destination);
 
-                // 이메일 추출
-                String email = userDetails.getUsername();
+        Member member = memberRepository.findByEmail(email)
+            .orElseThrow(() -> new CustomException(NOT_FOUND_MEMBER));
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+            .orElseThrow(() -> new CustomException(NOT_FOUND_CHATROOM));
 
-                // "/room/{roomId}" 형식에서 roomId 추출
-                String destination = accessor.getDestination();
-                Long roomId = this.extractRoomId(destination);
-
-                // 회원, 채팅방 불러오기
-                Member member = memberRepository.findByEmail(email)
-                    .orElseThrow(() -> new ErrorException(NOT_FOUND_MEMBER));
-                ChatRoom chatRoom = chatRoomRepository.findById(roomId)
-                    .orElseThrow(() -> new ErrorException(NOT_FOUND_CHATROOM));
-
-                if (!chatRoomParticipationRepository.existsByChatRoomAndMember(chatRoom, member)) {
-                    throw new ErrorException(NOT_FOUND_MEMBER);
-                }
-            }
+        if (!chatRoomParticipationRepository.existsByChatRoomAndMember(chatRoom, member)) {
+            log.error(NOT_FOUND_MEMBER.getMessage());
+            throw new CustomException(NOT_FOUND_MEMBER);
         }
 
         return message;
@@ -88,7 +83,8 @@ public class ChatSubscriptionInterceptor implements ChannelInterceptor {
             String roomIdStr = destination.substring(prefix.length());
             return Long.parseLong(roomIdStr);
         } else {
-            throw new ErrorException(NOT_FOUND_MEMBER);
+            log.error(NOT_FOUND_MEMBER.getMessage());
+            throw new CustomException(NOT_FOUND_MEMBER);
         }
     }
 

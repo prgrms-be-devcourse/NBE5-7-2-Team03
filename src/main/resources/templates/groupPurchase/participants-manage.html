@@ -211,11 +211,12 @@
         headers: {
           'Content-Type': 'application/json'
         }
-      }).then(response => {
+      }).then(async response => {
         if (response.ok) {
           updateParticipantStatus(participantId, true); // 상태 UI 변경
         } else {
-          alert("입금 확인에 실패했습니다.");
+          const errorBody = await response.json(); // JSON 파싱
+          alert(errorBody.message);
         }
       });
     }
@@ -230,11 +231,12 @@
         headers: {
           'Content-Type': 'application/json'
         }
-      }).then(response => {
+      }).then(async response => {
         if (response.ok) {
           removeParticipantItem(participantId); // UI에서 제거
         } else {
-          alert("강퇴에 실패했습니다.");
+          const errorBody = await response.json(); // JSON 파싱
+          alert(errorBody.message);
         }
       });
     }
