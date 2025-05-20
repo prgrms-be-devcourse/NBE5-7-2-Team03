@@ -5,6 +5,7 @@ import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseRequestDto;
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseResponseDto;
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseWithChatResponseDto;
 import com.team573.gongguri.domain.groupPurchase.entity.ProgressStatus;
+import com.team573.gongguri.domain.groupPurchase.entity.PurchaseFilter;
 import com.team573.gongguri.domain.groupPurchase.service.GroupPurchaseParticipantService;
 import com.team573.gongguri.domain.groupPurchase.service.GroupPurchaseService;
 import com.team573.gongguri.global.security.CustomUserDetails;
@@ -17,7 +18,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -93,23 +93,12 @@ public class GroupPurchaseController {
     @GetMapping("/chat")
     public ResponseEntity<List<GroupPurchaseWithChatResponseDto>> getWithChat(
             @RequestParam(required = false, name = "cursor") Long cursorGroupPurchaseId,
-            @RequestParam(required = false) String progressStatus,
+            @RequestParam(required = false, defaultValue = "ALL", name = "progressStatus") PurchaseFilter purchaseFilter,
             @RequestParam(defaultValue = "10") int size,
             @AuthenticationPrincipal CustomUserDetails customUserDetails
     ) {
-        List<ProgressStatus> progressStatuses = new ArrayList<>();
-
-        if (progressStatus != null) {
-            if (progressStatus.equals("RECRUITING")) {
-                progressStatuses.add(ProgressStatus.RECRUITING);
-                progressStatuses.add(ProgressStatus.CLOSED);
-            } else if (progressStatus.equals("COMPLETED")) {
-                progressStatuses.add(ProgressStatus.COMPLETED);
-            }
-        }
-
         List<GroupPurchaseWithChatResponseDto> withMessages
-                = groupPurchaseService.getWithMessage(size, cursorGroupPurchaseId, progressStatuses, customUserDetails.getMemberId());
+                = groupPurchaseService.getWithMessage(size, cursorGroupPurchaseId, purchaseFilter, customUserDetails.getMemberId());
         return ResponseEntity.ok(withMessages);
     }
 
@@ -150,10 +139,10 @@ public class GroupPurchaseController {
 
     @GetMapping
     public ResponseEntity<List<GroupPurchaseResponseDto>> getAllByCursor(
-            @RequestParam(required = false, name = "cursor") Long cursorGroupPurchaseId,
-            @RequestParam(required = false) String progressStatus,
-            @RequestParam(defaultValue = "10") int size,
-            @AuthenticationPrincipal CustomUserDetails customUserDetails
+        @RequestParam(required = false, name = "cursor") Long cursorGroupPurchaseId,
+        @RequestParam(required = false) String progressStatus,
+        @RequestParam(defaultValue = "10") int size,
+        @AuthenticationPrincipal CustomUserDetails customUserDetails
     ) {
         List<ProgressStatus> progressStatuses = new ArrayList<>();
 
@@ -167,14 +156,14 @@ public class GroupPurchaseController {
         }
 
         List<GroupPurchaseResponseDto> groupPurchases
-                = groupPurchaseService.getAllByCursor(
-                cursorGroupPurchaseId,
-                progressStatuses,
-                size,
-                customUserDetails.getUsername()
+            = groupPurchaseService.getAllByCursor(
+            cursorGroupPurchaseId,
+            progressStatuses,
+            size,
+            customUserDetails.getUsername()
         );
 
         return ResponseEntity.ok(groupPurchases);
     }
-
 }
+
