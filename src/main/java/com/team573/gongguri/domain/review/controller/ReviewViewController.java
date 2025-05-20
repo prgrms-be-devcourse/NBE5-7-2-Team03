@@ -1,7 +1,7 @@
 package com.team573.gongguri.domain.review.controller;
 
-import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseSimpleResponseDto;
-import com.team573.gongguri.domain.groupPurchase.service.GroupPurchaseService;
+import com.team573.gongguri.domain.grouppurchase.dto.GroupPurchaseSimpleResponseDto;
+import com.team573.gongguri.domain.grouppurchase.service.GroupPurchaseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

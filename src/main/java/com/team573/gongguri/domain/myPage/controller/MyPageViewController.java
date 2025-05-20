@@ -1,9 +1,9 @@
 package com.team573.gongguri.domain.myPage.controller;
 
-import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseListResponseDto;
-import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseWithReviewedResponseDto;
-import com.team573.gongguri.domain.groupPurchase.entity.PurchaseFilter;
-import com.team573.gongguri.domain.groupPurchase.service.GroupPurchaseService;
+import com.team573.gongguri.domain.grouppurchase.dto.GroupPurchaseListResponseDto;
+import com.team573.gongguri.domain.grouppurchase.dto.GroupPurchaseWithReviewedResponseDto;
+import com.team573.gongguri.domain.grouppurchase.entity.PurchaseFilter;
+import com.team573.gongguri.domain.grouppurchase.service.GroupPurchaseService;
 import com.team573.gongguri.domain.member.dto.LikeInfoDto;
 import com.team573.gongguri.domain.member.service.MemberService;
 import com.team573.gongguri.domain.myPage.service.MyPageService;
