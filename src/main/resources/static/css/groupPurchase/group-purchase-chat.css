@@ -27,6 +27,16 @@ th { background-color: #f2f2f2; }
   gap: 0.5rem;
   margin-bottom: 1rem;
   justify-content: center;
+  position: fixed;
+  top: 60px; /* .top-bar 아래 */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: var(--mobile-width);
+  background-color: white; /* 배경 없으면 겹쳐 보일 수 있음 */
+  z-index: 999;
+  padding: 0.5rem 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .filter-btn {
@@ -113,18 +123,26 @@ th { background-color: #f2f2f2; }
 }
 
 .status-badge {
-  padding: 0.2rem 0.6rem;
-  border-radius: 10px;
   font-size: 0.75rem;
-  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 1rem;
+  font-weight: bold;
+  white-space: nowrap;
 }
 
 .status-open {
-  background-color: #619bff;
+  background-color: #e0f7e9;
+  color: #2e7d32;
+}
+
+.status-closed {
+  background-color: #eeeeee;
+  color: #666666;
 }
 
 .status-done {
-  background-color: #aaa;
+  background-color: #e3eafc;
+  color: #1a237e;
 }
 
 .add-btn {
@@ -153,5 +171,5 @@ th { background-color: #f2f2f2; }
   margin: 0 auto;
   padding: 0 1rem;
   padding-bottom: 70px; /* Space for bottom navigation */
-  padding-top: 60px; /* Space for top bar */
+  padding-top: 120px; /* top-bar(60px) + status-filter(대략 60px) 만큼 */
 }

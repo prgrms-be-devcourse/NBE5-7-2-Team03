@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>참여자 관리</title>
+  <link rel="stylesheet" th:href="@{/css/styles.css}">
+  <link rel="stylesheet" th:href="@{/css/groupPurchase/participants-manage-styles.css}">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<div th:replace="~{fragments/layout :: mobileContainer}">
+  <div th:fragment="content">
+    <!-- Top bar component -->
+    <div th:replace="~{fragments/topbar :: topBar('참여자 관리')}"></div>
+
+    <main class="container">
+      <div class="status-filter">
+        <button class="filter-btn selected" data-filter="ALL" onclick="filterStatus('ALL')">전체</button>
+        <button class="filter-btn" data-filter="PENDING" onclick="filterStatus('PENDING')">입금 중</button>
+        <button class="filter-btn" data-filter="COMPLETED" onclick="filterStatus('COMPLETED')">입금 완료</button>
+      </div>
+
+      <!-- 참여자 목록 -->
+      <div class="participants-list">
+
+      </div>
+    </main>
+
+    <!-- Bottom bar component -->
+    <div th:replace="~{fragments/bottombar :: bottomNav('chat')}"></div>
+  </div>
+</div>
+
+<script th:inline="javascript">
+  // 필터 선택 기능
+  function filterStatus(status) {
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('selected'));
+    document.querySelector(`.filter-btn[data-filter="${status}"]`).classList.add('selected');
+
+    deposit = status
+    loadInitialData();
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    // 필터 탭 기능
+    // const filterTabs = document.querySelectorAll('.filter-tab');
+    // const participantItems = document.querySelectorAll('.participant-item');
+    //
+    // filterTabs.forEach(tab => {
+    //   tab.addEventListener('click', function() {
+    //     // 활성 탭 변경
+    //     filterTabs.forEach(t => t.classList.remove('active'));
+    //     this.classList.add('active');
+    //
+    //     // 필터 적용
+    //     const filter = this.getAttribute('data-filter');
+    //
+    //     participantItems.forEach(item => {
+    //       if (filter === 'all') {
+    //         item.style.display = 'flex';
+    //       } else if (filter === 'pending' && item.classList.contains('pending')) {
+    //         item.style.display = 'flex';
+    //       } else if (filter === 'completed' && item.classList.contains('completed')) {
+    //         item.style.display = 'flex';
+    //       } else {
+    //         item.style.display = 'none';
+    //       }
+    //     });
+    //   });
+    // });
+
+    // 입금 확인 버튼 기능
+    const confirmButtons = document.querySelectorAll('.btn-payment-confirm');
+    confirmButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        const participantItem = this.closest('.participant-item');
+
+        // 상태 변경 (실제로는 서버에 요청을 보내야 함)
+        participantItem.classList.remove('pending');
+        participantItem.classList.add('completed');
+
+        // 버튼 변경
+        this.textContent = '확인 완료';
+        this.classList.remove('btn-payment-confirm');
+        this.classList.add('btn-payment-completed');
+        this.disabled = true;
+
+        // 상태 메시지 변경
+        const statusElement = participantItem.querySelector('.participant-status');
+        statusElement.textContent = '입금 완료';
+      });
+    });
+
+    // 강퇴 버튼 기능
+    const removeButtons = document.querySelectorAll('.btn-remove');
+    removeButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        const participantItem = this.closest('.participant-item');
+
+        // 확인 대화상자
+        if (confirm('정말로 이 참여자를 강퇴하시겠습니까?')) {
+          // 실제로는 서버에 요청을 보내야 함
+          participantItem.style.opacity = '0.5';
+          setTimeout(() => {
+            participantItem.remove();
+          }, 300);
+        }
+      });
+    });
+  });
+
+  const participantList = document.querySelector(".participants-list");
+  const groupPurchaseId = [[${groupPurchaseId}]]; // 동적으로 할당하세요
+  cursor = null;
+  loading = false;
+  hasNext = true;
+  deposit = 'ALL'
+
+  document.addEventListener("DOMContentLoaded", () => {
+
+    // 스크롤 이벤트 리스너
+    window.addEventListener("scroll", () => {
+      const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+      if (scrollTop + windowHeight >= documentHeight - 200) {
+        loadParticipants();
+      }
+    });
+
+    // 초기 로딩
+    loadParticipants();
+  });
+
+  async function loadInitialData() {
+    cursor = null;
+    loading = false;
+    hasNext = true;
+    participantList.innerHTML = '';
+    await loadParticipants();
+  }
+
+  async function loadParticipants() {
+    if (loading || !hasNext) return;
+    loading = true;
+
+    let url = `/api/group-purchases/${groupPurchaseId}/participants?size=` + 10;
+
+    if (cursor) {
+      url += '&cursor=' + cursor;
+    }
+
+    if (deposit !== 'ALL') {
+      if (deposit === "PENDING") {
+        deposit = false;
+      } else if (deposit === "COMPLETED") {
+        deposit = true;
+      }
+      url += '&deposit=' + deposit;
+    }
+
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.length < 10) hasNext = false;
+    if (data.length > 0) {
+      cursor = data[data.length - 1].groupParticipantId;
+      renderParticipants(data);
+    }
+
+    loading = false;
+  }
+
+  function renderParticipants(participants) {
+    participants.forEach(participant => {
+      const item = document.createElement("div");
+      item.className = `participant-item ${participant.deposit ? 'completed' : 'pending'}`;
+      item.setAttribute('data-participant-id', participant.groupParticipantId); // 참가자 ID 데이터 속성 추가
+
+      item.innerHTML = `
+          <div class="participant-info">
+            <div class="participant-avatar">
+              <div class="avatar-placeholder"></div>
+            </div>
+            <div class="participant-details">
+              <div class="participant-name">${participant.nickname}</div>
+              <div class="participant-status">${participant.deposit ? '입금 완료' : '미입금'}</div>
+            </div>
+          </div>
+          <div class="participant-actions">
+            ${
+              participant.deposit
+              ? `<button class="btn-payment-completed" disabled>확인 완료</button>` +
+              `<button class="btn-remove-completed" disabled>강퇴</button>`
+              : `<button class="btn-payment-confirm" onclick="confirmDeposit(groupPurchaseId, ${participant.groupParticipantId})">입금 확인</button>` +
+              `<button class="btn-remove" onclick="cancelParticipation(groupPurchaseId, ${participant.groupParticipantId})">강퇴</button>`
+            }
+          </div>
+        `;
+      participantList.appendChild(item);
+    });
+  }
+
+  // 입금 확인
+  function confirmDeposit(groupPurchaseId, participantId) {
+    const confirmed = confirm("입금을 확인하시겠습니까?");
+    if (confirmed) {
+      fetch(`/api/group-purchases/${groupPurchaseId}/participants/${participantId}/confirm`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }).then(async response => {
+        if (response.ok) {
+          updateParticipantStatus(participantId, true); // 상태 UI 변경
+        } else {
+          const errorBody = await response.json(); // JSON 파싱
+          alert(errorBody.message);
+        }
+      });
+    }
+  }
+
+  // 참여 취소 (강퇴)
+  function cancelParticipation(groupPurchaseId, participantId) {
+    const confirmed = confirm("정말로 강퇴하시겠습니까?");
+    if (confirmed) {
+      fetch(`/api/group-purchases/${groupPurchaseId}/participants/${participantId}/cancel`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }).then(async response => {
+        if (response.ok) {
+          removeParticipantItem(participantId); // UI에서 제거
+        } else {
+          const errorBody = await response.json(); // JSON 파싱
+          alert(errorBody.message);
+        }
+      });
+    }
+  }
+
+  // 참여자 제거
+  function removeParticipantItem(participantId) {
+    const item = document.querySelector(`.participant-item[data-participant-id="${participantId}"]`);
+    if (item) {
+      item.remove();
+    }
+  }
+
+  // 참가자 상태 및 버튼 업데이트
+  function updateParticipantStatus(participantId, isDeposited) {
+    // 참가자 아이템 찾기
+    const participantItem = document.querySelector(`.participant-item[data-participant-id="${participantId}"]`);
+
+    if (participantItem) {
+      // 상태 텍스트 변경
+      const statusElement = participantItem.querySelector('.participant-status');
+      statusElement.textContent = isDeposited ? '입금 완료' : '미입금';
+
+      // 버튼 영역 업데이트
+      const actionsElement = participantItem.querySelector('.participant-actions');
+      if (isDeposited) {
+        actionsElement.innerHTML = `
+        <button class="btn-payment-completed" disabled>확인 완료</button>
+        <button class="btn-remove-completed" disabled>강퇴</button>
+      `;
+      } else {
+        actionsElement.innerHTML = `
+        <button class="btn-payment-confirm" onclick="confirmDeposit(groupPurchaseId, ${participantId})">입금 확인</button>
+        <button class="btn-remove" onclick="cancelParticipation(groupPurchaseId, ${participantId})">강퇴</button>
+      `;
+      }
+    }
+  }
+</script>
+</body>
+</html>

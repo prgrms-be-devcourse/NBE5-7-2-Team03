@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>공동구매 작성</title>
+    <title>공동구매 수정</title>
     <link rel="stylesheet" th:href="@{/css/styles.css}">
     <link rel="stylesheet" th:href="@{/css/groupPurchase/group-purchase-post_style.css}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -11,7 +11,7 @@
 <body>
 <div th:replace="~{fragments/layout :: mobileContainer}">
     <div th:fragment="content">
-        <div th:replace="~{fragments/topbar :: topBar('공동구매 작성')}"></div>
+        <div th:replace="~{fragments/topbar :: topBar('공동구매 수정')}"></div>
 
         <main class="container">
             <form id="groupPurchaseForm">
@@ -25,19 +25,29 @@
                     <input type="hidden" id="imageUrl" name="imageUrl" />
                 </div>
 
+                <!-- 진행 상태 -->
+                <div class="form-section">
+                    <label for="progressStatus">진행 상태</label>
+                    <select id="progressStatus" name="progressStatus" required>
+                        <option value="RECRUITING">진행중</option>
+                        <option value="CLOSED">모집 마감</option>
+                        <option value="COMPLETED">구매 완료</option>
+                    </select>
+                </div>
+
                 <!-- 제목 -->
                 <div class="form-section">
                     <label for="title">제목</label>
-                    <input type="text" id="title" name="title" placeholder="제목" required />
+                    <input type="text" id="title" name="title" required />
                 </div>
 
                 <!-- 가격 -->
                 <div class="form-section">
                     <label for="price">가격</label>
-                    <input type="number" id="price" name="price" placeholder="₩ 1인당 가격을 입력해주세요." required />
+                    <input type="number" id="price" name="price" required />
                 </div>
 
-                <!-- 은행 선택 -->
+                <!-- 은행 -->
                 <div class="form-section">
                     <label for="bank">은행</label>
                     <select id="bank" name="bank" required>
@@ -55,12 +65,12 @@
                 <!-- 계좌번호 -->
                 <div class="form-section">
                     <label for="account">계좌 번호</label>
-                    <input type="text" id="account" name="account" placeholder="계좌 번호" required />
+                    <input type="text" id="account" name="account" required />
                 </div>
 
                 <!-- 인원 -->
                 <div class="form-section">
-                    <label for="peopleCount">인원 <span style="font-size: 0.85em;">(본인 포함)</span></label>
+                    <label for="peopleCount">인원 (본인 포함)</label>
                     <div class="people-counter">
                         <button type="button" onclick="decreaseCount()">−</button>
                         <span id="count">1</span>
@@ -72,12 +82,12 @@
                 <!-- 내용 -->
                 <div class="form-section">
                     <label for="content">내용</label>
-                    <textarea id="content" name="content" placeholder="내용을 입력하세요." required></textarea>
+                    <textarea id="content" name="content" required></textarea>
                 </div>
 
-                <!-- 작성 버튼 -->
+                <!-- 수정 버튼 -->
                 <div class="form-section">
-                    <button type="submit" class="submit-button">작성하기</button>
+                    <button type="submit" class="submit-button">수정하기</button>
                 </div>
             </form>
         </main>
@@ -102,7 +112,34 @@
         }
     }
 
-    // 이미지 업로드 → 서버로 전송 후 URL 저장
+    // ID 파라미터 가져오기
+    const params = new URLSearchParams(location.search);
+    const groupPurchaseId = params.get("id");
+
+    // 초기값 불러오기
+    window.addEventListener("DOMContentLoaded", async () => {
+        try {
+            const res = await fetch(`/api/group-purchases/${groupPurchaseId}`);
+            const data = await res.json();
+
+            document.getElementById("progressStatus").value = data.progressStatus;
+            document.getElementById("title").value = data.title;
+            document.getElementById("price").value = data.price;
+            document.getElementById("bank").value = data.bank;
+            document.getElementById("account").value = data.account;
+            document.getElementById("peopleCount").value = data.maxParticipants;
+            document.getElementById("count").innerText = data.maxParticipants;
+            document.getElementById("content").value = data.content;
+            document.getElementById("imageUrl").value = data.imageUrl;
+            document.getElementById("imagePreview").src = data.imageUrl;
+
+            count = parseInt(data.maxParticipants);
+        } catch (e) {
+            alert("기존 데이터를 불러오는 데 실패했습니다.");
+        }
+    });
+
+    // 이미지 업로드
     document.getElementById("imageUpload").addEventListener("change", async function(event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -119,27 +156,26 @@
         try {
             const res = await fetch("/api/images", {
                 method: "POST",
-                body: formData,
+                body: formData
             });
-
             if (res.ok) {
                 const data = await res.json();
                 document.getElementById("imageUrl").value = data.imageUrl;
-                console.log("이미지 업로드 성공:", data.imageUrl);
             } else {
-                const error = await res.text();
-                alert("이미지 업로드 실패: " + error);
+                alert("이미지 업로드 실패");
             }
         } catch (err) {
-            alert("이미지 업로드 중 에러: " + err.message);
+            alert("이미지 업로드 에러: " + err.message);
         }
     });
 
-    // 게시글 작성 요청 (JSON 방식)
+    // 수정 제출
     document.getElementById("groupPurchaseForm").addEventListener("submit", async function (e) {
         e.preventDefault();
 
         const body = {
+
+            progressStatus: document.getElementById("progressStatus").value,
             title: document.getElementById("title").value,
             price: document.getElementById("price").value,
             bank: document.getElementById("bank").value,
@@ -150,20 +186,20 @@
         };
 
         try {
-            const res = await fetch("/api/group-purchases", {
-                method: "POST",
+            const res = await fetch(`/api/group-purchases/${groupPurchaseId}`, {
+                method: "PUT",
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify(body),
+                body: JSON.stringify(body)
             });
 
-
             if (res.ok) {
+                alert("수정이 완료되었습니다.");
                 window.location.href = "/group-purchase";
             } else {
-                const errorText = await res.text();
-                alert("등록 실패: " + errorText);
+                const errText = await res.text();
+                alert("수정 실패: " + errText);
             }
         } catch (err) {
             alert("에러 발생: " + err.message);

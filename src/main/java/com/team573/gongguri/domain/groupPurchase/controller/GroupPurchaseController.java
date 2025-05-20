@@ -1,9 +1,12 @@
 package com.team573.gongguri.domain.groupPurchase.controller;
 
+import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseParticipantResponseDto;
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseRequestDto;
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseResponseDto;
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseWithChatResponseDto;
 import com.team573.gongguri.domain.groupPurchase.entity.ProgressStatus;
+import com.team573.gongguri.domain.groupPurchase.entity.PurchaseFilter;
+import com.team573.gongguri.domain.groupPurchase.service.GroupPurchaseParticipantService;
 import com.team573.gongguri.domain.groupPurchase.service.GroupPurchaseService;
 import com.team573.gongguri.global.security.CustomUserDetails;
 import java.util.ArrayList;
@@ -15,9 +18,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -32,9 +35,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Slf4j
 public class GroupPurchaseController {
-    private final GroupPurchaseService service;
     private final GroupPurchaseService groupPurchaseService;
-
+    private final GroupPurchaseParticipantService groupPurchaseParticipantService;
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GroupPurchaseResponseDto> add(
@@ -43,7 +45,7 @@ public class GroupPurchaseController {
 
         log.info("[GroupPurchaseController] JSON 방식 게시글 작성 요청 수신");
         String email = customUserDetails.getUsername();
-        GroupPurchaseResponseDto createdDto = service.add(dto, email);
+        GroupPurchaseResponseDto createdDto = groupPurchaseService.add(dto, email);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdDto);
     }
 
@@ -52,14 +54,15 @@ public class GroupPurchaseController {
             @PathVariable Long id,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         String email = userDetails.getUsername();
-        return ResponseEntity.ok(service.get(id, email));
+        return ResponseEntity.ok(groupPurchaseService.get(id, email));
     }
 
-    @GetMapping
+    @Deprecated
+    @GetMapping("/deprecated")
     public ResponseEntity<List<GroupPurchaseResponseDto>> getAll(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         String email = userDetails.getUsername();
-        return ResponseEntity.ok(service.getAll(email));
+        return ResponseEntity.ok(groupPurchaseService.getAll(email));
     }
 
     @PutMapping("/{id}")
@@ -67,12 +70,12 @@ public class GroupPurchaseController {
             @PathVariable Long id,
             @RequestBody GroupPurchaseRequestDto dto
     ) {
-        return ResponseEntity.ok(service.update(id, dto));
+        return ResponseEntity.ok(groupPurchaseService.update(id, dto));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        service.delete(id);
+        groupPurchaseService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
@@ -82,7 +85,7 @@ public class GroupPurchaseController {
             @AuthenticationPrincipal CustomUserDetails customUserDetails
     ) {
         String email = customUserDetails.getUsername();
-        service.join(id, email);
+        groupPurchaseService.join(id, email);
         log.info("member joined: {}", email);
         return ResponseEntity.noContent().build();
     }
@@ -90,9 +93,56 @@ public class GroupPurchaseController {
     @GetMapping("/chat")
     public ResponseEntity<List<GroupPurchaseWithChatResponseDto>> getWithChat(
             @RequestParam(required = false, name = "cursor") Long cursorGroupPurchaseId,
-            @RequestParam(required = false) String progressStatus,
+            @RequestParam(required = false, defaultValue = "ALL", name = "progressStatus") PurchaseFilter purchaseFilter,
             @RequestParam(defaultValue = "10") int size,
             @AuthenticationPrincipal CustomUserDetails customUserDetails
+    ) {
+        List<GroupPurchaseWithChatResponseDto> withMessages
+                = groupPurchaseService.getWithMessage(size, cursorGroupPurchaseId, purchaseFilter, customUserDetails.getMemberId());
+        return ResponseEntity.ok(withMessages);
+    }
+
+    @PatchMapping("/{groupPurchaseId}/participants/{participantsId}/confirm")
+    public ResponseEntity<Void> confirmDeposit(
+        @PathVariable Long groupPurchaseId,
+        @PathVariable Long participantsId,
+        @AuthenticationPrincipal CustomUserDetails customUserDetails
+    ) {
+        groupPurchaseParticipantService.confirmDeposit(groupPurchaseId, participantsId, customUserDetails.getMemberId());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{groupPurchaseId}/participants/{participantsId}/cancel")
+    public ResponseEntity<Void> cancelParticipantStatus(
+        @PathVariable Long groupPurchaseId,
+        @PathVariable Long participantsId,
+        @AuthenticationPrincipal CustomUserDetails customUserDetails
+    ) {
+        groupPurchaseParticipantService.cancelParticipation(groupPurchaseId, participantsId, customUserDetails.getMemberId());
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{groupPurchaseId}/participants")
+    public ResponseEntity<List<GroupPurchaseParticipantResponseDto>> getParticipants(
+        @PathVariable Long groupPurchaseId,
+        @RequestParam(required = false, name = "cursor") Long cursorParticipantId,
+        @RequestParam(required = false) Boolean deposit,
+        @RequestParam(defaultValue = "10") int size,
+        @AuthenticationPrincipal CustomUserDetails customUserDetails
+    ) {
+        log.info("{}", deposit);
+        List<GroupPurchaseParticipantResponseDto> participants = groupPurchaseParticipantService.getParticipants(
+            groupPurchaseId, cursorParticipantId, deposit, customUserDetails.getMemberId(), size);
+
+        return ResponseEntity.ok(participants);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<GroupPurchaseResponseDto>> getAllByCursor(
+        @RequestParam(required = false, name = "cursor") Long cursorGroupPurchaseId,
+        @RequestParam(required = false) String progressStatus,
+        @RequestParam(defaultValue = "10") int size,
+        @AuthenticationPrincipal CustomUserDetails customUserDetails
     ) {
         List<ProgressStatus> progressStatuses = new ArrayList<>();
 
@@ -105,9 +155,15 @@ public class GroupPurchaseController {
             }
         }
 
-        List<GroupPurchaseWithChatResponseDto> withMessages
-                = groupPurchaseService.getWithMessage(size, cursorGroupPurchaseId, progressStatuses, customUserDetails.getMemberId());
-        return ResponseEntity.ok(withMessages);
+        List<GroupPurchaseResponseDto> groupPurchases
+            = groupPurchaseService.getAllByCursor(
+            cursorGroupPurchaseId,
+            progressStatuses,
+            size,
+            customUserDetails.getUsername()
+        );
+
+        return ResponseEntity.ok(groupPurchases);
     }
 }
 
