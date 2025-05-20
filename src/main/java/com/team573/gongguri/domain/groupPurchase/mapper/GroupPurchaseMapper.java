@@ -108,6 +108,17 @@ public class GroupPurchaseMapper {
             .price(groupPurchase.getPrice())
             .build();
     }
+    public static GroupPurchaseListResponseDto toListDto(GroupPurchase purchase, int currentParticipants) {
+        return GroupPurchaseListResponseDto.builder()
+                .id(purchase.getGroupId())
+                .title(purchase.getTitle())
+                .price(purchase.getPrice())
+                .progressStatus(purchase.getProgressStatus().name())
+                .currentParticipants(currentParticipants)
+                .maxParticipants(purchase.getMaxParticipants())
+                .imageUrl(purchase.getImageUrl()) // 없으면 null 처리
+                .build();
+    }
 
     public static GroupPurchaseFindCreatedResponseDto toFindCreatedDto(GroupPurchase entity, int currentParticipants) {
         return GroupPurchaseFindCreatedResponseDto.builder()
@@ -122,5 +133,20 @@ public class GroupPurchaseMapper {
     }
 
 
+    public static GroupPurchaseWithReviewedResponseDto toDtoWithReviewed(
+        GroupPurchase groupPurchase,
+        Long participantCount,
+        Boolean isReviewed
+    ) {
+        return GroupPurchaseWithReviewedResponseDto.builder()
+            .id(groupPurchase.getGroupId())
+            .title(groupPurchase.getTitle())
+            .maxParticipants(groupPurchase.getMaxParticipants())
+            .participantCount(participantCount)
+            .isReviewed(isReviewed)
+            .imageUrl(groupPurchase.getImageUrl())
+            .price(groupPurchase.getPrice())
+            .build();
+    }
 }
 
