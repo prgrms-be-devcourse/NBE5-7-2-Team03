@@ -1,6 +1,8 @@
 package com.team573.gongguri.domain.myPage.controller;
 
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseResponseDto;
+import com.team573.gongguri.domain.groupPurchase.entity.PurchaseFilter;
+import com.team573.gongguri.domain.groupPurchase.service.GroupPurchaseService;
 import com.team573.gongguri.domain.myPage.service.MyPageService;
 import com.team573.gongguri.global.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +20,7 @@ import java.util.List;
 @RequestMapping("/my-page")
 public class MyPageViewController {
     private final MyPageService myPageService;
+    private final GroupPurchaseService groupPurchaseService;
 
     @GetMapping("")
     public String showMyPageForm(Model model, @AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -26,19 +29,19 @@ public class MyPageViewController {
     }
 
     @GetMapping("/profile")
-    public String showProfile(
+    public String showMyProfile(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestParam(defaultValue = "ALL") String status,
+            @RequestParam(defaultValue = "ALL") PurchaseFilter status,
             Model model) {
 
         model.addAttribute("nickname", userDetails.getNickname());
         Long memberId = userDetails.getMemberId();
 
         // 내 작성 공동구매 리스트 조회
-        List<GroupPurchaseResponseDto> createdList = myPageService.findMyCreatedPurchases(memberId, status);
+        List<GroupPurchaseResponseDto> createdList = groupPurchaseService.findCreatedPurchases(memberId, status);
 
         // 뷰에 상태와 리스트 전달
-        model.addAttribute("status", status);
+        model.addAttribute("status", status.name());
         model.addAttribute("createdList", createdList);
 
         return "myPage/profile";

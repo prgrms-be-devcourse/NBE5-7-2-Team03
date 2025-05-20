@@ -19,19 +19,31 @@ public class GroupPurchaseViewController {
     }
     // 공동구매 게시글 작성 페이지
     @GetMapping("/post")
-    public String showPostPage() {
+    public String showCreatePage() {
         return "groupPurchase/group-purchase-post";
     }
 
     // 공동구매 게시글 상세 페이지
     @GetMapping("/{id}")
-    public String showReadPage(@PathVariable Long id, Model model) {
+    public String showDetailPage(@PathVariable Long id, Model model) {
         model.addAttribute("groupId", id);
         return "groupPurchase/group-purchase-read";
+    }
+
+    // 공동구매 게시글 수정 페이지
+    @GetMapping("/update")
+    public String showUpdatePage() {
+        return "groupPurchase/group-purchase-update";
     }
 
     @GetMapping("/chats")
     public String showChats() {
         return "groupPurchase/group-purchase-chats";
+    }
+
+    @GetMapping("/{groupPurchaseId}/participants")
+    public String manageParticipants(@PathVariable Long groupPurchaseId, Model model) {
+        model.addAttribute("groupPurchaseId", groupPurchaseId);
+        return "groupPurchase/participants-manage";
     }
 }

@@ -27,6 +27,16 @@ th { background-color: #f2f2f2; }
   gap: 0.5rem;
   margin-bottom: 1rem;
   justify-content: center;
+  position: fixed;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: var(--mobile-width);
+  background-color: white;
+  z-index: 999;
+  padding: 0.5rem 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .filter-btn {
@@ -113,23 +123,31 @@ th { background-color: #f2f2f2; }
 }
 
 .status-badge {
-  padding: 0.2rem 0.6rem;
-  border-radius: 10px;
   font-size: 0.75rem;
-  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 1rem;
+  font-weight: bold;
+  white-space: nowrap;
 }
 
 .status-open {
-  background-color: #619bff;
+  background-color: #e0f7e9;
+  color: #2e7d32;
+}
+
+.status-closed {
+  background-color: #eeeeee;
+  color: #666666;
 }
 
 .status-done {
-  background-color: #aaa;
+  background-color: #e3eafc;
+  color: #1a237e;
 }
 
 .add-btn {
   position: fixed;
-  right: calc((100vw - 390px) / 2); /* 모바일 우측 기준 */
+  right: calc((100vw - 390px) / 2);
   bottom: 80px;
   width: 48px;
   height: 48px;
@@ -152,6 +170,6 @@ th { background-color: #f2f2f2; }
   max-width: var(--mobile-width);
   margin: 0 auto;
   padding: 0 1rem;
-  padding-bottom: 70px; /* Space for bottom navigation */
-  padding-top: 60px; /* Space for top bar */
+  padding-bottom: 70px;
+  padding-top: 120px;
 }
