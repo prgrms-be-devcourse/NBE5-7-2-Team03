@@ -1,6 +1,7 @@
 package com.team573.gongguri.domain.myPage.controller;
 
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseResponseDto;
+import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseWithReviewedResponseDto;
 import com.team573.gongguri.domain.groupPurchase.entity.PurchaseFilter;
 import com.team573.gongguri.domain.groupPurchase.service.GroupPurchaseService;
 import com.team573.gongguri.domain.myPage.service.MyPageService;
@@ -46,16 +47,15 @@ public class MyPageViewController {
 
         return "myPage/profile";
     }
+
     @GetMapping("/purchase")
     public String showMyPurchase(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            Model model) {
-
+            Model model
+    ) {
         Long memberId = userDetails.getMemberId();
 
-        List<GroupPurchaseResponseDto> participatedList = myPageService.findMyParticipatedPurchases(memberId)
-                .stream()
-                .toList();
+        List<GroupPurchaseWithReviewedResponseDto> participatedList = myPageService.findMyParticipatedPurchases(memberId);
 
         model.addAttribute("participatedList", participatedList);
         return "myPage/purchase";

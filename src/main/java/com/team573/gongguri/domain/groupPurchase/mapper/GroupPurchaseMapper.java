@@ -6,6 +6,7 @@ import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseWithChatRespon
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseRequestDto;
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseResponseDto;
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseWithParticipantCountDto;
+import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseWithReviewedResponseDto;
 import com.team573.gongguri.domain.groupPurchase.entity.GroupPurchase;
 import com.team573.gongguri.domain.groupPurchase.entity.ProgressStatus;
 import com.team573.gongguri.domain.member.entity.Member;
@@ -94,5 +95,20 @@ public class GroupPurchaseMapper {
             .build();
     }
 
+    public static GroupPurchaseWithReviewedResponseDto toDtoWithReviewed(
+        GroupPurchase groupPurchase,
+        Long participantCount,
+        Boolean isReviewed
+    ) {
+        return GroupPurchaseWithReviewedResponseDto.builder()
+            .id(groupPurchase.getGroupId())
+            .title(groupPurchase.getTitle())
+            .maxParticipants(groupPurchase.getMaxParticipants())
+            .participantCount(participantCount)
+            .isReviewed(isReviewed)
+            .imageUrl(groupPurchase.getImageUrl())
+            .price(groupPurchase.getPrice())
+            .build();
+    }
 }
 
