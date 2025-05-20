@@ -1,9 +1,6 @@
 package com.team573.gongguri.domain.groupPurchase.controller;
 
-import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseParticipantResponseDto;
-import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseRequestDto;
-import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseResponseDto;
-import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseWithChatResponseDto;
+import com.team573.gongguri.domain.groupPurchase.dto.*;
 import com.team573.gongguri.domain.groupPurchase.entity.ProgressStatus;
 import com.team573.gongguri.domain.groupPurchase.entity.PurchaseFilter;
 import com.team573.gongguri.domain.groupPurchase.service.GroupPurchaseParticipantService;
@@ -39,34 +36,34 @@ public class GroupPurchaseController {
     private final GroupPurchaseParticipantService groupPurchaseParticipantService;
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<GroupPurchaseResponseDto> add(
+    public ResponseEntity<GroupPurchaseCreateResponseDto> add(
             @RequestBody GroupPurchaseRequestDto dto,
             @AuthenticationPrincipal CustomUserDetails customUserDetails) {
 
         log.info("[GroupPurchaseController] JSON 방식 게시글 작성 요청 수신");
         String email = customUserDetails.getUsername();
-        GroupPurchaseResponseDto createdDto = groupPurchaseService.add(dto, email);
+        GroupPurchaseCreateResponseDto createdDto = groupPurchaseService.add(dto, email);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdDto);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<GroupPurchaseResponseDto> get(
+    public ResponseEntity<GroupPurchaseDetailResponseDto> get(
             @PathVariable Long id,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         String email = userDetails.getUsername();
         return ResponseEntity.ok(groupPurchaseService.get(id, email));
     }
 
-    @Deprecated
-    @GetMapping("/deprecated")
-    public ResponseEntity<List<GroupPurchaseResponseDto>> getAll(
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
-        String email = userDetails.getUsername();
-        return ResponseEntity.ok(groupPurchaseService.getAll(email));
-    }
+//    @Deprecated
+//    @GetMapping("/deprecated")
+//    public ResponseEntity<List<GroupPurchaseListResponseDto>> getAll(
+//            @AuthenticationPrincipal CustomUserDetails userDetails) {
+//        String email = userDetails.getUsername();
+//        return ResponseEntity.ok(groupPurchaseService.getAll(email));
+//    }
 
     @PutMapping("/{id}")
-    public ResponseEntity<GroupPurchaseResponseDto> update(
+    public ResponseEntity<GroupPurchaseUpdateResponseDto> update(
             @PathVariable Long id,
             @RequestBody GroupPurchaseRequestDto dto
     ) {
@@ -138,7 +135,7 @@ public class GroupPurchaseController {
     }
 
     @GetMapping
-    public ResponseEntity<List<GroupPurchaseResponseDto>> getAllByCursor(
+    public ResponseEntity<List<GroupPurchaseListResponseDto>> getAllByCursor(
         @RequestParam(required = false, name = "cursor") Long cursorGroupPurchaseId,
         @RequestParam(required = false) String progressStatus,
         @RequestParam(defaultValue = "10") int size,
@@ -155,7 +152,7 @@ public class GroupPurchaseController {
             }
         }
 
-        List<GroupPurchaseResponseDto> groupPurchases
+        List<GroupPurchaseListResponseDto> groupPurchases
             = groupPurchaseService.getAllByCursor(
             cursorGroupPurchaseId,
             progressStatuses,

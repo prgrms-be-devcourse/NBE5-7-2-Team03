@@ -1,6 +1,6 @@
 package com.team573.gongguri.domain.myPage.service;
 
-import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseResponseDto;
+import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseFindCreatedResponseDto;
 import com.team573.gongguri.domain.groupPurchase.entity.GroupPurchase;
 import com.team573.gongguri.domain.groupPurchase.entity.GroupPurchaseParticipant;
 import com.team573.gongguri.domain.groupPurchase.entity.ProgressStatus;
@@ -19,7 +19,7 @@ public class MyPageService {
     private final GroupPurchaseParticipantRepository groupPurchaseParticipantRepository;
 
     // 내가 참여한 공구글
-    public List<GroupPurchaseResponseDto> findMyParticipatedPurchases(Long memberId){
+    public List<GroupPurchaseFindCreatedResponseDto> findMyParticipatedPurchases(Long memberId){
 
         // '본인이 참여했으며, 연관된 공구가 완료된' 공구 참여자 entity 조회
         List<GroupPurchaseParticipant> participants =
@@ -31,7 +31,7 @@ public class MyPageService {
                 .map(GroupPurchaseParticipant::getGroupPurchase)
                 .map(purchase -> {
                     int currentParticipants = groupPurchaseParticipantRepository.countByGroupPurchase_GroupId(purchase.getGroupId());
-                    return GroupPurchaseMapper.toDto(purchase, currentParticipants, false);
+                    return GroupPurchaseMapper.toFindCreatedDto(purchase, currentParticipants);
                 })
                 .toList();
     }
