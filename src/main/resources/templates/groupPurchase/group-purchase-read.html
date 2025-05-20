@@ -80,6 +80,8 @@
             const res = await fetch(`/api/group-purchases/${groupId}`);
             const data = await res.json();
 
+            window.writerId = data.writerId
+
             const statusMap = {
                 RECRUITING: { text: "진행중", class: "status-open" },
                 CLOSED: { text: "모집 마감", class: "status-closed" },
@@ -186,6 +188,15 @@
 
         } catch (err) {
             alert("상세 정보를 불러오지 못했습니다.");
+        }
+    });
+
+    document.querySelector(".profile-button").addEventListener("click", () => {
+        const writerId = window.writerId;
+        if (writerId) {
+            window.location.href = `/profile/${writerId}`;
+        } else {
+            alert("작성자 정보를 불러오지 못했습니다.");
         }
     });
 

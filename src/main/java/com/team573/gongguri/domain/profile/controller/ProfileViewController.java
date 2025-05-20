@@ -1,6 +1,6 @@
 package com.team573.gongguri.domain.profile.controller;
 
-import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseResponseDto;
+import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseFindCreatedResponseDto;
 import com.team573.gongguri.domain.groupPurchase.entity.PurchaseFilter;
 import com.team573.gongguri.domain.groupPurchase.service.GroupPurchaseService;
 import com.team573.gongguri.domain.member.entity.Member;
@@ -34,7 +34,7 @@ public class ProfileViewController {
         model.addAttribute("memberId", memberId);
 
         // 유저 작성 공동구매 리스트 조회
-        List<GroupPurchaseResponseDto> createdList = groupPurchaseService.findCreatedPurchases(memberId, status);
+        List<GroupPurchaseFindCreatedResponseDto> createdList = groupPurchaseService.findCreatedPurchases(memberId, status);
 
         // 뷰에 상태와 리스트 전달
         model.addAttribute("status", status.name());

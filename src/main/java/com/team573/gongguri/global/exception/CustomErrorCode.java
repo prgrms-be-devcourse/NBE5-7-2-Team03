@@ -52,8 +52,11 @@ public enum CustomErrorCode {
     CREATE_FAILED_CHATROOM(CONFLICT, "CHAT-003", " 생성에 실패했습니다."),
 
     //UNIV
-    NOT_FOUND_UNIV(NOT_FOUND, "UNIV-001", "해당 대학교 정보가 존재하지 않습니다.");
+    NOT_FOUND_UNIV(NOT_FOUND, "UNIV-001", "해당 대학교 정보가 존재하지 않습니다."),
 
+    //IMAGE_UPLOAD
+    INVALID_IMAGE_FILE(BAD_REQUEST, "IMAGE-001", "잘못된 이미지 파일입니다."),
+    IMAGE_UPLOAD_FAILED(CONFLICT, "IMAGE-002", "이미지 업로드에 실패했습니다.");
 
     private final ErrorStatus errorStatus;
     private final String code;
