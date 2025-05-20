@@ -1,6 +1,7 @@
 package com.team573.gongguri.domain.review.service;
 
 import com.team573.gongguri.domain.groupPurchase.entity.GroupPurchase;
+import com.team573.gongguri.domain.groupPurchase.entity.ProgressStatus;
 import com.team573.gongguri.domain.groupPurchase.repository.GroupPurchaseRepository;
 import com.team573.gongguri.domain.member.entity.Member;
 import com.team573.gongguri.domain.member.repository.MemberRepository;
@@ -24,6 +25,10 @@ public class ReviewService {
             .orElseThrow(() -> new CustomException(CustomErrorCode.NOT_FOUND_MEMBER));
         GroupPurchase groupPurchase = groupPurchaseRepository.findById(groupPurchaseId)
             .orElseThrow(() -> new CustomException(CustomErrorCode.NOT_FOUND_GROUP_PURCHASE));
+
+        if (!groupPurchase.getProgressStatus().equals(ProgressStatus.COMPLETED)) {
+            throw new CustomException(CustomErrorCode.IS_NOT_COMPLETED);
+        }
 
         Review createdReview = reviewRepository.save(ReviewMapper.toEntity(groupPurchase, member, like));
 
