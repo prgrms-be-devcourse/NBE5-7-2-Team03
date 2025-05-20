@@ -14,7 +14,7 @@ public class ReviewViewController {
 
     private final GroupPurchaseService groupPurchaseService;
 
-    @GetMapping("/group-purchases/{groupPurchaseId}/review")
+    @GetMapping("/group-purchase/{groupPurchaseId}/review")
     public String review(
         @PathVariable Long groupPurchaseId,
         Model model
