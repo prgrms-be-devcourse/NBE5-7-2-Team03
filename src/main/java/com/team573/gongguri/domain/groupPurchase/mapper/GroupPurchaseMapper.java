@@ -1,12 +1,7 @@
 package com.team573.gongguri.domain.groupPurchase.mapper;
 
 import com.team573.gongguri.domain.chat.entity.ChatRoom;
-import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseSimpleResponseDto;
-import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseWithChatResponseDto;
-import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseRequestDto;
-import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseResponseDto;
-import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseWithParticipantCountDto;
-import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseWithReviewedResponseDto;
+import com.team573.gongguri.domain.groupPurchase.dto.*;
 import com.team573.gongguri.domain.groupPurchase.entity.GroupPurchase;
 import com.team573.gongguri.domain.groupPurchase.entity.ProgressStatus;
 import com.team573.gongguri.domain.member.entity.Member;
@@ -30,26 +25,43 @@ public class GroupPurchaseMapper {
                 .build();
     }
 
-    public static GroupPurchaseResponseDto toDto(GroupPurchase entity) {
-        return toDto(entity, 0, false);
+    public static GroupPurchaseCreateResponseDto toCreateDto(GroupPurchase entity) {
+        return GroupPurchaseCreateResponseDto.builder()
+                .id(entity.getGroupId())
+                .title(entity.getTitle())
+                .progressStatus(entity.getProgressStatus().toString())
+                .imageUrl(entity.getImageUrl())
+                .build();
     }
 
-    public static GroupPurchaseResponseDto toDto(GroupPurchase entity, int currentParticipants, boolean isParticipated) {
-        return new GroupPurchaseResponseDto(
-                entity.getGroupId(),
-                entity.getTitle(),
-                entity.getContent(),
-                entity.getPrice(),
-                entity.getMaxParticipants(),
-                currentParticipants,
-                entity.getBank(),
-                entity.getAccount(),
-                entity.getProgressStatus().toString(),
-                entity.getImageUrl(),
-                isParticipated,
-                entity.getMember().getEmail(),
-                entity.getMember().getNickname()
-        );
+    public static GroupPurchaseUpdateResponseDto toUpdateDto(GroupPurchase entity) {
+        return GroupPurchaseUpdateResponseDto.builder()
+                .id(entity.getGroupId())
+                .title(entity.getTitle())
+                .content(entity.getContent())
+                .price(entity.getPrice())
+                .maxParticipants(entity.getMaxParticipants())
+                .progressStatus(entity.getProgressStatus().toString())
+                .imageUrl(entity.getImageUrl())
+                .build();
+    }
+    public static GroupPurchaseDetailResponseDto toDetailDto(GroupPurchase entity, int currentParticipants, boolean isParticipated) {
+        return GroupPurchaseDetailResponseDto.builder()
+                .id(entity.getGroupId())
+                .title(entity.getTitle())
+                .content(entity.getContent())
+                .price(entity.getPrice())
+                .maxParticipants(entity.getMaxParticipants())
+                .currentParticipants(currentParticipants)
+                .bank(entity.getBank())
+                .account(entity.getAccount())
+                .progressStatus(entity.getProgressStatus().toString())
+                .imageUrl(entity.getImageUrl())
+                .isParticipated(isParticipated)
+                .writerEmail(entity.getMember().getEmail())
+                .writerNickname(entity.getMember().getNickname())
+                .writerId(entity.getMember().getMemberId())
+                .build();
     }
 
     public static GroupPurchaseWithChatResponseDto toDtoWithMessage(
@@ -69,17 +81,15 @@ public class GroupPurchaseMapper {
             .build();
     }
 
-    public static GroupPurchaseResponseDto toDto(GroupPurchaseWithParticipantCountDto dto, Boolean isParticipated) {
-        return GroupPurchaseResponseDto.builder()
+    public static GroupPurchaseListResponseDto toListDto(GroupPurchaseWithParticipantCountDto dto) {
+        return GroupPurchaseListResponseDto.builder()
                 .id(dto.groupId())
                 .title(dto.title())
-                .content(dto.content())
                 .price(dto.price())
                 .maxParticipants(dto.maxParticipants())
                 .currentParticipants(dto.participantCount().intValue())
                 .progressStatus(dto.progressStatus().toString())
                 .imageUrl(dto.imageUrl())
-                .isParticipated(isParticipated)
                 .build();
     }
 
@@ -94,6 +104,30 @@ public class GroupPurchaseMapper {
             .price(groupPurchase.getPrice())
             .build();
     }
+    public static GroupPurchaseListResponseDto toListDto(GroupPurchase purchase, int currentParticipants) {
+        return GroupPurchaseListResponseDto.builder()
+                .id(purchase.getGroupId())
+                .title(purchase.getTitle())
+                .price(purchase.getPrice())
+                .progressStatus(purchase.getProgressStatus().name())
+                .currentParticipants(currentParticipants)
+                .maxParticipants(purchase.getMaxParticipants())
+                .imageUrl(purchase.getImageUrl()) // 없으면 null 처리
+                .build();
+    }
+
+    public static GroupPurchaseFindCreatedResponseDto toFindCreatedDto(GroupPurchase entity, int currentParticipants) {
+        return GroupPurchaseFindCreatedResponseDto.builder()
+                .id(entity.getGroupId())
+                .title(entity.getTitle())
+                .price(entity.getPrice())
+                .maxParticipants(entity.getMaxParticipants())
+                .currentParticipants(currentParticipants)
+                .progressStatus(entity.getProgressStatus().toString())
+                .imageUrl(entity.getImageUrl())
+                .build();
+    }
+
 
     public static GroupPurchaseWithReviewedResponseDto toDtoWithReviewed(
         GroupPurchase groupPurchase,

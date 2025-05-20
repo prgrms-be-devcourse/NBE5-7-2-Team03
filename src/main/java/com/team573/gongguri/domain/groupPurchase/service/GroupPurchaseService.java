@@ -2,11 +2,7 @@ package com.team573.gongguri.domain.groupPurchase.service;
 
 import com.team573.gongguri.domain.chat.entity.ChatRoom;
 import com.team573.gongguri.domain.chat.service.ChatService;
-import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseRequestDto;
-import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseResponseDto;
-import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseSimpleResponseDto;
-import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseWithChatResponseDto;
-import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseWithParticipantCountDto;
+import com.team573.gongguri.domain.groupPurchase.dto.*;
 import com.team573.gongguri.domain.groupPurchase.entity.GroupPurchase;
 import com.team573.gongguri.domain.groupPurchase.entity.GroupPurchaseParticipant;
 import com.team573.gongguri.domain.groupPurchase.entity.ParticipationStatus;
@@ -20,6 +16,7 @@ import com.team573.gongguri.domain.groupPurchase.repository.GroupPurchaseReposit
 import com.team573.gongguri.domain.member.entity.Member;
 import com.team573.gongguri.domain.member.entity.Univ;
 import com.team573.gongguri.domain.member.repository.MemberRepository;
+import com.team573.gongguri.domain.member.service.MemberService;
 import com.team573.gongguri.global.exception.CustomErrorCode;
 import com.team573.gongguri.global.exception.CustomException;
 import java.util.List;
@@ -41,16 +38,38 @@ public class GroupPurchaseService {
     private final ChatService chatService;
     private final GroupPurchaseJpqlRepository groupPurchaseJpqlRepository;
     private final GroupPurchaseParticipantRepository groupPurchaseParticipantRepository;
+    private final MemberService memberService;
+
+
+    private GroupPurchase getActiveGroupPurchase(Long id) {
+        GroupPurchase groupPurchase = groupPurchaseRepository.findByGroupIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.NOT_FOUND_GROUP_PURCHASE));
+        return groupPurchase;
+    }
+
+    private int getCurrentParticipantsCount(Long id) {
+        int currentParticipants = participantRepository.countByGroupPurchase_GroupId(id);
+        return currentParticipants;
+    }
+
+    private void registerParticipant(GroupPurchase groupPurchase, Member member) {
+        try {
+            GroupPurchaseParticipant participant = GroupPurchaseParticipantMapper.toEntity(groupPurchase, member);
+            participantRepository.save(participant);
+        } catch (Exception e) {
+            log.error("참여자 등록 실패", e);
+            throw new CustomException(CustomErrorCode.JOIN_FAILED);
+        }
+    }
 
     @Transactional
-    public GroupPurchaseResponseDto add(GroupPurchaseRequestDto dto, String email) {
-        Member writer = memberRepository.findByEmail(email)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.NOT_FOUND_MEMBER));
+    public GroupPurchaseCreateResponseDto add(GroupPurchaseRequestDto dto, Long memberId) {
+        Member writer = memberService.getMemberById(memberId);
 
         Univ univ = writer.getUniv();
         ChatRoom chatRoom;
         try {
-            chatRoom = chatService.addChatRoom(email);
+            chatRoom = chatService.addChatRoom(writer.getEmail());
         } catch (Exception e) {
             log.error("채팅방 생성 실패", e);
             throw new CustomException(CustomErrorCode.CREATE_FAILED_GROUP_PURCHASE);
@@ -66,67 +85,37 @@ public class GroupPurchaseService {
             throw new CustomException(CustomErrorCode.CREATE_FAILED_GROUP_PURCHASE);
         }
 
-        try {
-            GroupPurchaseParticipant participant = GroupPurchaseParticipantMapper.toEntity(groupPurchase, writer);
-            participantRepository.save(participant);
-        } catch (Exception e) {
-            log.error("작성자를 참여자로 등록 실패", e);
-            throw new CustomException(CustomErrorCode.JOIN_FAILED);
-        }
-
-        int currentParticipants = participantRepository.countByGroupPurchase_GroupId(groupPurchase.getGroupId());
-        boolean isParticipated = true;
-
-        return GroupPurchaseMapper.toDto(groupPurchase, currentParticipants, isParticipated);
+        registerParticipant(groupPurchase, writer);
+        return GroupPurchaseMapper.toCreateDto(groupPurchase);
     }
-
     @Transactional(readOnly = true)
-    public GroupPurchaseResponseDto get(Long id, String email) {
-        Member member = memberRepository.findByEmail(email)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.NOT_FOUND_MEMBER));
+    public GroupPurchaseDetailResponseDto get(Long id, Long memberId) {
         GroupPurchase groupPurchase = groupPurchaseRepository.findById(id)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.NOT_FOUND_GROUP_PURCHASE));
-        int currentParticipants = participantRepository.countByGroupPurchase_GroupId(id);
-        boolean isParticipated = participantRepository.existsByGroupPurchase_GroupIdAndMember_Email(id, email);
+        int currentParticipants = getCurrentParticipantsCount(id);
+        boolean isParticipated = participantRepository.existsByGroupPurchase_GroupIdAndMember_MemberId(id, memberId);
 
-        return GroupPurchaseMapper.toDto(groupPurchase, currentParticipants, isParticipated);
-    }
-
-    @Deprecated
-    @Transactional(readOnly = true)
-    public List<GroupPurchaseResponseDto> getAll(String email) {
-        return groupPurchaseRepository.findAllActive().stream()
-                .map(entity -> {
-                    int currentParticipants = participantRepository.countByGroupPurchase_GroupId(entity.getGroupId());
-                    boolean isParticipated = participantRepository.existsByGroupPurchase_GroupIdAndMember_Email(entity.getGroupId(), email);
-                    return GroupPurchaseMapper.toDto(entity, currentParticipants, isParticipated);
-                })
-                .collect(Collectors.toList());
+        return GroupPurchaseMapper.toDetailDto(groupPurchase, currentParticipants, isParticipated);
     }
 
     @Transactional(readOnly = true)
-    public List<GroupPurchaseResponseDto> getAllByCursor(
+    public List<GroupPurchaseListResponseDto> getAllByCursor(
             Long cursorId,
             List<ProgressStatus> statuses,
-            int size,
-            String email
+            int size
     ) {
         List<GroupPurchaseWithParticipantCountDto> groupPurchases =
                 groupPurchaseJpqlRepository.findAllWithCursorAndParticipantCount(cursorId, statuses, size);
 
         return groupPurchases.stream()
-                .map(dto -> {
-
-                    return GroupPurchaseMapper.toDto(dto, null); // ← dto 기반 변환 메서드 필요
-                })
-                .collect(Collectors.toList());
+                .map(GroupPurchaseMapper::toListDto)
+                .toList();
     }
 
     @Transactional
-    public GroupPurchaseResponseDto update(Long id, GroupPurchaseRequestDto dto) {
+    public GroupPurchaseUpdateResponseDto update(Long id, GroupPurchaseRequestDto dto) {
 
-        GroupPurchase groupPurchase = groupPurchaseRepository.findByGroupIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.NOT_FOUND_GROUP_PURCHASE));
+        GroupPurchase groupPurchase = getActiveGroupPurchase(id);
         try {
             groupPurchase.update(
                     dto.title(),
@@ -142,43 +131,33 @@ public class GroupPurchaseService {
             log.error("공동구매 수정 실패", e);
             throw new CustomException(CustomErrorCode.UPDATE_FAILED_GROUP_PURCHASE);
         }
-        return GroupPurchaseMapper.toDto(groupPurchase);
+        return GroupPurchaseMapper.toUpdateDto(groupPurchase);
     }
 
     @Transactional
     public void delete(Long id) {
-        GroupPurchase groupPurchase = groupPurchaseRepository.findByGroupIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.NOT_FOUND_GROUP_PURCHASE));
+        GroupPurchase groupPurchase = getActiveGroupPurchase(id);
         groupPurchase.markAsDeleted();
     }
 
     @Transactional
-    public void join(Long groupId, String email) {
-        Member member = memberRepository.findByEmail(email)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.NOT_FOUND_MEMBER));
+    public void join(Long groupId, Long memberId) {
+        Member member = memberService.getMemberById(memberId);
 
-        GroupPurchase groupPurchase = groupPurchaseRepository.findByGroupIdAndIsDeletedFalse(groupId)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.NOT_FOUND_GROUP_PURCHASE));
+        GroupPurchase groupPurchase = getActiveGroupPurchase(groupId);
 
-        int currentCount = participantRepository.countByGroupPurchase_GroupId(groupId);
+        int currentCount = countParticipantsByStatus(groupPurchase, ParticipationStatus.JOINED).intValue();
         if (currentCount >= groupPurchase.getMaxParticipants()) {
             throw new CustomException(CustomErrorCode.PARTICIPANT_LIMIT_REACHED);
         }
 
-        boolean alreadyJoined = participantRepository.existsByGroupPurchase_GroupIdAndMember_Email(groupId, email);
+        boolean alreadyJoined = participantRepository.existsByGroupPurchase_GroupIdAndMember_MemberId(groupId, memberId);
         if (alreadyJoined) {
             throw new CustomException(CustomErrorCode.ALREADY_JOINED);
         }
 
-        try {
-            GroupPurchaseParticipant participant = GroupPurchaseParticipantMapper.toEntity(groupPurchase, member);
-            participantRepository.save(participant);
-            chatService.addChatParticipation(groupPurchase.getChatRoom().getChatRoomId(), email);
-        } catch (Exception e) {
-            log.error("참여자 등록 실패", e);
-            throw new CustomException(CustomErrorCode.JOIN_FAILED);
-        }
-
+        registerParticipant(groupPurchase, member);
+        chatService.addChatParticipation(groupPurchase.getChatRoom().getChatRoomId(), member.getEmail());
         int afterJoinCount = currentCount + 1;
         if (afterJoinCount >= groupPurchase.getMaxParticipants()) {
             groupPurchase.setProgressStatus(ProgressStatus.CLOSED);
@@ -193,7 +172,7 @@ public class GroupPurchaseService {
         Long memberId
     ) {
         // 필터로 공동 구매 상태 구하기
-        List<ProgressStatus> statuses = getStatusesByFilter(purchaseFilter);
+        List<ProgressStatus> statuses = purchaseFilter.toStatuses();
 
         PageRequest pageable = PageRequest.of(0, size);
 
@@ -212,15 +191,6 @@ public class GroupPurchaseService {
                 )
             )
             .toList();
-    }
-
-    // 상태 조건 분리
-    private List<ProgressStatus> getStatusesByFilter(PurchaseFilter filter) {
-        return switch (filter) {
-            case ONGOING -> List.of(ProgressStatus.RECRUITING, ProgressStatus.CLOSED);
-            case COMPLETED -> List.of(ProgressStatus.COMPLETED);
-            default -> List.of(ProgressStatus.RECRUITING, ProgressStatus.CLOSED, ProgressStatus.COMPLETED);
-        };
     }
 
     // 조회한 공동 구매 채팅 메시지 조회
@@ -251,28 +221,26 @@ public class GroupPurchaseService {
     }
 
     //특정 멤버가 작성한 공동구매글 조회
-    public List<GroupPurchaseResponseDto> findCreatedPurchases(Long memberId, PurchaseFilter purchaseFilter){
+    public List<GroupPurchaseListResponseDto> findCreatedPurchases(Long memberId, PurchaseFilter purchaseFilter){
+
+        memberRepository.findById(memberId).orElseThrow(() -> new CustomException(CustomErrorCode.NOT_FOUND_MEMBER));
+
 
         List<GroupPurchase> purchases;
-        switch (purchaseFilter) {
-            case ONGOING -> {
-                List<ProgressStatus> statuses = List.of(ProgressStatus.RECRUITING, ProgressStatus.CLOSED);
-                purchases = groupPurchaseRepository.findByMember_MemberIdAndProgressStatusIn(memberId, statuses);
-            }
-            case COMPLETED -> {
-                purchases = groupPurchaseRepository.findByMember_MemberIdAndProgressStatus(memberId, ProgressStatus.COMPLETED);
-            }
-            default -> {
-                purchases = groupPurchaseRepository.findByMember_MemberId(memberId);
-            }
+        List<ProgressStatus> statuses = purchaseFilter.toStatuses();
+
+        if (statuses.size() == ProgressStatus.values().length) {
+            purchases = groupPurchaseRepository.findByMember_MemberId(memberId);
+        } else {
+            purchases = groupPurchaseRepository.findByMember_MemberIdAndProgressStatusIn(memberId, statuses);
         }
 
         return purchases.stream()
                 .map(purchase -> {
                     int currentParticipants = participantRepository.countByGroupPurchase_GroupId(purchase.getGroupId());
-                    return GroupPurchaseMapper.toDto(purchase, currentParticipants, false);
+                    return GroupPurchaseMapper.toListDto(purchase, currentParticipants);
+
                 })
                 .toList();
     }
-
 }

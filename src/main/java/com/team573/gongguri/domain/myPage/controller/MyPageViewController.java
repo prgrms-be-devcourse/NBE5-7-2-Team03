@@ -1,6 +1,6 @@
 package com.team573.gongguri.domain.myPage.controller;
 
-import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseResponseDto;
+import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseListResponseDto;
 import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseWithReviewedResponseDto;
 import com.team573.gongguri.domain.groupPurchase.entity.PurchaseFilter;
 import com.team573.gongguri.domain.groupPurchase.service.GroupPurchaseService;
@@ -39,7 +39,7 @@ public class MyPageViewController {
         Long memberId = userDetails.getMemberId();
 
         // 내 작성 공동구매 리스트 조회
-        List<GroupPurchaseResponseDto> createdList = groupPurchaseService.findCreatedPurchases(memberId, status);
+        List<GroupPurchaseListResponseDto> createdList = groupPurchaseService.findCreatedPurchases(memberId, status);
 
         // 뷰에 상태와 리스트 전달
         model.addAttribute("status", status.name());
