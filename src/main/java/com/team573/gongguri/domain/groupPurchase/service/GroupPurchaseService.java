@@ -38,15 +38,41 @@ public class GroupPurchaseService {
     private final GroupPurchaseJpqlRepository groupPurchaseJpqlRepository;
     private final GroupPurchaseParticipantRepository groupPurchaseParticipantRepository;
 
-    @Transactional
-    public GroupPurchaseCreateResponseDto add(GroupPurchaseRequestDto dto, String email) {
-        Member writer = memberRepository.findByEmail(email)
+    private Member getMemberById(Long memberId) {
+        Member writer = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.NOT_FOUND_MEMBER));
+        return writer;
+    }
+
+    private GroupPurchase getActiveGroupPurchase(Long id) {
+        GroupPurchase groupPurchase = groupPurchaseRepository.findByGroupIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.NOT_FOUND_GROUP_PURCHASE));
+        return groupPurchase;
+    }
+
+    private int getCurrentParticipantsCount(Long id) {
+        int currentParticipants = participantRepository.countByGroupPurchase_GroupId(id);
+        return currentParticipants;
+    }
+
+    private void registerParticipant(GroupPurchase groupPurchase, Member member) {
+        try {
+            GroupPurchaseParticipant participant = GroupPurchaseParticipantMapper.toEntity(groupPurchase, member);
+            participantRepository.save(participant);
+        } catch (Exception e) {
+            log.error("참여자 등록 실패", e);
+            throw new CustomException(CustomErrorCode.JOIN_FAILED);
+        }
+    }
+
+    @Transactional
+    public GroupPurchaseCreateResponseDto add(GroupPurchaseRequestDto dto, Long memberId) {
+        Member writer = getMemberById(memberId);
 
         Univ univ = writer.getUniv();
         ChatRoom chatRoom;
         try {
-            chatRoom = chatService.addChatRoom(email);
+            chatRoom = chatService.addChatRoom(writer.getEmail());
         } catch (Exception e) {
             log.error("채팅방 생성 실패", e);
             throw new CustomException(CustomErrorCode.CREATE_FAILED_GROUP_PURCHASE);
@@ -62,45 +88,24 @@ public class GroupPurchaseService {
             throw new CustomException(CustomErrorCode.CREATE_FAILED_GROUP_PURCHASE);
         }
 
-        try {
-            GroupPurchaseParticipant participant = GroupPurchaseParticipantMapper.toEntity(groupPurchase, writer);
-            participantRepository.save(participant);
-        } catch (Exception e) {
-            log.error("작성자를 참여자로 등록 실패", e);
-            throw new CustomException(CustomErrorCode.JOIN_FAILED);
-        }
-
+        registerParticipant(groupPurchase, writer);
         return GroupPurchaseMapper.toCreateDto(groupPurchase);
     }
-
     @Transactional(readOnly = true)
-    public GroupPurchaseDetailResponseDto get(Long id, String email) {
+    public GroupPurchaseDetailResponseDto get(Long id, Long memberId) {
         GroupPurchase groupPurchase = groupPurchaseRepository.findById(id)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.NOT_FOUND_GROUP_PURCHASE));
-        int currentParticipants = participantRepository.countByGroupPurchase_GroupId(id);
-        boolean isParticipated = participantRepository.existsByGroupPurchase_GroupIdAndMember_Email(id, email);
+        int currentParticipants = getCurrentParticipantsCount(id);
+        boolean isParticipated = participantRepository.existsByGroupPurchase_GroupIdAndMember_MemberId(id, memberId);
 
         return GroupPurchaseMapper.toDetailDto(groupPurchase, currentParticipants, isParticipated);
     }
-
-//    @Deprecated
-//    @Transactional(readOnly = true)
-//    public List<GroupPurchaseResponseDto> getAll(String email) {
-//        return groupPurchaseRepository.findAllActive().stream()
-//                .map(entity -> {
-//                    int currentParticipants = participantRepository.countByGroupPurchase_GroupId(entity.getGroupId());
-//                    boolean isParticipated = participantRepository.existsByGroupPurchase_GroupIdAndMember_Email(entity.getGroupId(), email);
-//                    return GroupPurchaseMapper.toDto(entity, currentParticipants, isParticipated);
-//                })
-//                .collect(Collectors.toList());
-//    }
 
     @Transactional(readOnly = true)
     public List<GroupPurchaseListResponseDto> getAllByCursor(
             Long cursorId,
             List<ProgressStatus> statuses,
-            int size,
-            String email
+            int size
     ) {
         List<GroupPurchaseWithParticipantCountDto> groupPurchases =
                 groupPurchaseJpqlRepository.findAllWithCursorAndParticipantCount(cursorId, statuses, size);
@@ -113,8 +118,7 @@ public class GroupPurchaseService {
     @Transactional
     public GroupPurchaseUpdateResponseDto update(Long id, GroupPurchaseRequestDto dto) {
 
-        GroupPurchase groupPurchase = groupPurchaseRepository.findByGroupIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.NOT_FOUND_GROUP_PURCHASE));
+        GroupPurchase groupPurchase = getActiveGroupPurchase(id);
         try {
             groupPurchase.update(
                     dto.title(),
@@ -135,38 +139,28 @@ public class GroupPurchaseService {
 
     @Transactional
     public void delete(Long id) {
-        GroupPurchase groupPurchase = groupPurchaseRepository.findByGroupIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.NOT_FOUND_GROUP_PURCHASE));
+        GroupPurchase groupPurchase = getActiveGroupPurchase(id);
         groupPurchase.markAsDeleted();
     }
 
     @Transactional
-    public void join(Long groupId, String email) {
-        Member member = memberRepository.findByEmail(email)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.NOT_FOUND_MEMBER));
+    public void join(Long groupId, Long memberId) {
+        Member member = getMemberById(memberId);
 
-        GroupPurchase groupPurchase = groupPurchaseRepository.findByGroupIdAndIsDeletedFalse(groupId)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.NOT_FOUND_GROUP_PURCHASE));
+        GroupPurchase groupPurchase = getActiveGroupPurchase(groupId);
 
-        int currentCount = participantRepository.countByGroupPurchase_GroupId(groupId);
+        int currentCount = getCurrentParticipantsCount(groupId);
         if (currentCount >= groupPurchase.getMaxParticipants()) {
             throw new CustomException(CustomErrorCode.PARTICIPANT_LIMIT_REACHED);
         }
 
-        boolean alreadyJoined = participantRepository.existsByGroupPurchase_GroupIdAndMember_Email(groupId, email);
+        boolean alreadyJoined = participantRepository.existsByGroupPurchase_GroupIdAndMember_MemberId(groupId, memberId);
         if (alreadyJoined) {
             throw new CustomException(CustomErrorCode.ALREADY_JOINED);
         }
 
-        try {
-            GroupPurchaseParticipant participant = GroupPurchaseParticipantMapper.toEntity(groupPurchase, member);
-            participantRepository.save(participant);
-            chatService.addChatParticipation(groupPurchase.getChatRoom().getChatRoomId(), email);
-        } catch (Exception e) {
-            log.error("참여자 등록 실패", e);
-            throw new CustomException(CustomErrorCode.JOIN_FAILED);
-        }
-
+        registerParticipant(groupPurchase, member);
+        chatService.addChatParticipation(groupPurchase.getChatRoom().getChatRoomId(), member.getEmail());
         int afterJoinCount = currentCount + 1;
         if (afterJoinCount >= groupPurchase.getMaxParticipants()) {
             groupPurchase.setProgressStatus(ProgressStatus.CLOSED);
@@ -257,10 +251,9 @@ public class GroupPurchaseService {
 
         return purchases.stream()
                 .map(purchase -> {
-                    int currentParticipants = participantRepository.countByGroupPurchase_GroupId(purchase.getGroupId());
+                    int currentParticipants = getCurrentParticipantsCount(purchase.getGroupId());
                     return GroupPurchaseMapper.toFindCreatedDto(purchase, currentParticipants);
                 })
                 .toList();
     }
-
 }

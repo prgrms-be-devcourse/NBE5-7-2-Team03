@@ -41,8 +41,8 @@ public class GroupPurchaseController {
             @AuthenticationPrincipal CustomUserDetails customUserDetails) {
 
         log.info("[GroupPurchaseController] JSON 방식 게시글 작성 요청 수신");
-        String email = customUserDetails.getUsername();
-        GroupPurchaseCreateResponseDto createdDto = groupPurchaseService.add(dto, email);
+        Long memberId = customUserDetails.getMemberId();
+        GroupPurchaseCreateResponseDto createdDto = groupPurchaseService.add(dto, memberId);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdDto);
     }
 
@@ -50,17 +50,9 @@ public class GroupPurchaseController {
     public ResponseEntity<GroupPurchaseDetailResponseDto> get(
             @PathVariable Long id,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        String email = userDetails.getUsername();
-        return ResponseEntity.ok(groupPurchaseService.get(id, email));
+        Long memberId = userDetails.getMemberId();;
+        return ResponseEntity.ok(groupPurchaseService.get(id, memberId));
     }
-
-//    @Deprecated
-//    @GetMapping("/deprecated")
-//    public ResponseEntity<List<GroupPurchaseListResponseDto>> getAll(
-//            @AuthenticationPrincipal CustomUserDetails userDetails) {
-//        String email = userDetails.getUsername();
-//        return ResponseEntity.ok(groupPurchaseService.getAll(email));
-//    }
 
     @PutMapping("/{id}")
     public ResponseEntity<GroupPurchaseUpdateResponseDto> update(
@@ -81,9 +73,9 @@ public class GroupPurchaseController {
             @PathVariable Long id,
             @AuthenticationPrincipal CustomUserDetails customUserDetails
     ) {
-        String email = customUserDetails.getUsername();
-        groupPurchaseService.join(id, email);
-        log.info("member joined: {}", email);
+        Long memberId = customUserDetails.getMemberId();
+        groupPurchaseService.join(id, memberId);
+        log.info("member joined: {}", memberId);
         return ResponseEntity.noContent().build();
     }
 
@@ -156,8 +148,7 @@ public class GroupPurchaseController {
             = groupPurchaseService.getAllByCursor(
             cursorGroupPurchaseId,
             progressStatuses,
-            size,
-            customUserDetails.getUsername()
+            size
         );
 
         return ResponseEntity.ok(groupPurchases);
