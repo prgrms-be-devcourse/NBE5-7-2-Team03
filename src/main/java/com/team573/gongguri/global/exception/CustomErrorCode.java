@@ -24,6 +24,8 @@ public enum CustomErrorCode {
     DELETE_FAILED_GROUP_PURCHASE(CONFLICT, "POST-004", "공동구매 게시글 삭제에 실패했습니다."),
     UNAUTHORIZED_GROUP_PURCHASE_ACCESS(FORBIDDEN, "POST-005", "해당 공동구매에 접근 권한이 없습니다."),
     UNAUTHORIZED_GROUP_PURCHASE_MANAGE(FORBIDDEN, "POST-006", "해당 공동구매에 대한 관리 권한이 없습니다."),
+    FAILED_GROUP_PURCHASE_LIST(CONFLICT, "POST-007", "공동구매 게시글 목록 불러오기게 실패했습니다."),
+    ALREADY_DELETE_GROUP_PURCHASE(CONFLICT, "POST-008" , "이미 삭제된 공동구매 게시글입니다."),
 
     //GROUP_PURCHASE_PARTICIPATE
     ALREADY_JOINED(CONFLICT, "PARTICIPATE-001", "이미 공동구매에 참여하였습니다."),
@@ -49,12 +51,13 @@ public enum CustomErrorCode {
     // CHAT
     NOT_FOUND_CHATROOM(NOT_FOUND, "CHAT-001", "존재하지 않는 채팅방입니다."),
     NOT_PARTICIPATING(FORBIDDEN, "CHAT-002", "채팅방에 참여하고 있지 않습니다."),
-    CREATE_FAILED_CHATROOM(CONFLICT, "CHAT-003", " 생성에 실패했습니다."),
+    CREATE_FAILED_CHATROOM(CONFLICT, "CHAT-003", "생성에 실패했습니다."),
+    CHAT_JOIN_FALED(CONFLICT,"CHAT-004", "채팅방 참여에 실패했습니다."),
 
-    //UNIV
+    //UNIV,
     NOT_FOUND_UNIV(NOT_FOUND, "UNIV-001", "해당 대학교 정보가 존재하지 않습니다."),
 
-    //IMAGE_UPLOAD
+    //IMAGE_UPLOAD,
     INVALID_IMAGE_FILE(BAD_REQUEST, "IMAGE-001", "잘못된 이미지 파일입니다."),
     IMAGE_UPLOAD_FAILED(CONFLICT, "IMAGE-002", "이미지 업로드에 실패했습니다.");
 

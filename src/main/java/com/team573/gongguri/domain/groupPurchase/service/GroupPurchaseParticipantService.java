@@ -56,6 +56,7 @@ public class GroupPurchaseParticipantService {
         Boolean deposit,
         Long memberId,
         int size
+
     ) {
         PageRequest pageRequest = PageRequest.of(0, size);
 

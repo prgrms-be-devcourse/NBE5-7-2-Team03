@@ -104,9 +104,13 @@ public class GroupPurchaseService {
             List<ProgressStatus> statuses,
             int size
     ) {
-        List<GroupPurchaseWithParticipantCountDto> groupPurchases =
-                groupPurchaseJpqlRepository.findAllWithCursorAndParticipantCount(cursorId, statuses, size);
-
+        List<GroupPurchaseWithParticipantCountDto> groupPurchases;
+        try {
+            groupPurchases = groupPurchaseJpqlRepository.findAllWithCursorAndParticipantCount(cursorId, statuses, size);
+        } catch (Exception e) {
+            log.error("공동구매 목록 조회 실패");
+            throw new CustomException(CustomErrorCode.FAILED_GROUP_PURCHASE_LIST);
+        }
         return groupPurchases.stream()
                 .map(GroupPurchaseMapper::toListDto)
                 .toList();
@@ -137,6 +141,9 @@ public class GroupPurchaseService {
     @Transactional
     public void delete(Long id) {
         GroupPurchase groupPurchase = getActiveGroupPurchase(id);
+        if (groupPurchase.isDeleted()) {
+            throw new CustomException(CustomErrorCode.ALREADY_DELETE_GROUP_PURCHASE);
+        }
         groupPurchase.markAsDeleted();
     }
 
@@ -157,7 +164,13 @@ public class GroupPurchaseService {
         }
 
         registerParticipant(groupPurchase, member);
-        chatService.addChatParticipation(groupPurchase.getChatRoom().getChatRoomId(), member.getEmail());
+
+        try {
+            chatService.addChatParticipation(groupPurchase.getChatRoom().getChatRoomId(), member.getEmail());
+        }catch (Exception e) {
+            log.error("채팅방 참여 실패", e);
+            throw new CustomException(CustomErrorCode.CHAT_JOIN_FALED);
+        }
         int afterJoinCount = currentCount + 1;
         if (afterJoinCount >= groupPurchase.getMaxParticipants()) {
             groupPurchase.setProgressStatus(ProgressStatus.CLOSED);
@@ -177,8 +190,13 @@ public class GroupPurchaseService {
         PageRequest pageable = PageRequest.of(0, size);
 
         // 공동 구매 조회
-        List<GroupPurchase> groupPurchases
-            = groupPurchaseRepository.findWithCursorAndParticipantCount(cursorId, memberId, statuses, pageable);
+        List<GroupPurchase> groupPurchases;
+        try {
+            groupPurchases = groupPurchaseRepository.findWithCursorAndParticipantCount(cursorId, memberId, statuses, pageable);
+        } catch (Exception e) {
+            log.error("공동구매 목록 조회 실패");
+            throw new CustomException(CustomErrorCode.FAILED_GROUP_PURCHASE_LIST);
+        }
 
         // 맵으로 채팅 메시지 가져오기
         Map<Long, String> firstMessages = getFirstMessages(groupPurchases);
