@@ -141,18 +141,16 @@ public class GroupPurchaseService {
     @Transactional
     public void delete(Long id) {
         GroupPurchase groupPurchase = getActiveGroupPurchase(id);
-
         if (groupPurchase.isDeleted()) {
             throw new CustomException(CustomErrorCode.ALREADY_DELETE_GROUP_PURCHASE);
         }
-
-        boolean hasDepositedParticipants = groupPurchaseParticipantRepository
-                .existsByGroupPurchase_GroupIdAndDepositIsTrue(id);
-
-        if (hasDepositedParticipants) {
-            throw new CustomException(CustomErrorCode.DELETE_FAILED_WITH_DEPOSITED_PARTICIPANTS);
+        if (!groupPurchase.getProgressStatus().equals(ProgressStatus.COMPLETED)) {
+            boolean hasDepositedParticipants = participantRepository
+                    .existsByGroupPurchase_GroupIdAndDepositIsTrue(id);
+            if (hasDepositedParticipants) {
+                throw new CustomException(CustomErrorCode.DELETE_FAILED_WITH_DEPOSITED_PARTICIPANTS);
+            }
         }
-
         groupPurchase.markAsDeleted();
     }
 
