@@ -123,10 +123,10 @@
     border-radius: 12px;
     margin: 16px 0;
 }
-/* === 작성자만 보이는 우측 상단 메뉴 === */
+
 .menu-wrapper {
     position: relative;
-    display: none; /* 기본은 숨김 */
+    display: none;
 }
 
 .menu-button {
@@ -170,17 +170,17 @@
     font-weight: 500;
 }
 
-/* 참여자 관리: 짙은 회색 */
+
 .menu-manage-button {
     color: #444;
 }
 
-/* 수정하기: 파란색 */
+
 .menu-edit-button {
     color: #3376ff;
 }
 
-/* 삭제하기: 빨간색 */
+
 .menu-delete-button {
     color: #e74c3c;
 }
