@@ -1,8 +1,8 @@
 package com.team573.gongguri.domain.review.service;
 
-import com.team573.gongguri.domain.groupPurchase.entity.GroupPurchase;
-import com.team573.gongguri.domain.groupPurchase.entity.ProgressStatus;
-import com.team573.gongguri.domain.groupPurchase.repository.GroupPurchaseRepository;
+import com.team573.gongguri.domain.grouppurchase.entity.GroupPurchase;
+import com.team573.gongguri.domain.grouppurchase.entity.ProgressStatus;
+import com.team573.gongguri.domain.grouppurchase.repository.GroupPurchaseRepository;
 import com.team573.gongguri.domain.member.entity.Member;
 import com.team573.gongguri.domain.member.repository.MemberRepository;
 import com.team573.gongguri.domain.review.entity.Review;
