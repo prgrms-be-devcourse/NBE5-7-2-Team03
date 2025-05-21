@@ -119,19 +119,6 @@ public class GroupPurchaseMapper {
                 .build();
     }
 
-    public static GroupPurchaseFindCreatedResponseDto toFindCreatedDto(GroupPurchase entity, int currentParticipants) {
-        return GroupPurchaseFindCreatedResponseDto.builder()
-                .id(entity.getGroupId())
-                .title(entity.getTitle())
-                .price(entity.getPrice())
-                .maxParticipants(entity.getMaxParticipants())
-                .currentParticipants(currentParticipants)
-                .progressStatus(entity.getProgressStatus().toString())
-                .imageUrl(entity.getImageUrl())
-                .build();
-    }
-
-
     public static GroupPurchaseWithReviewedResponseDto toDtoWithReviewed(
         GroupPurchase groupPurchase,
         Long participantCount,

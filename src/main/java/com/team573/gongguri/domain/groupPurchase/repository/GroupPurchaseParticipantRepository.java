@@ -12,8 +12,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface GroupPurchaseParticipantRepository extends JpaRepository<GroupPurchaseParticipant, Long> {
 
-    int countByGroupPurchase_GroupId(Long groupId);
-
     boolean existsByGroupPurchase_GroupIdAndMember_MemberId(Long groupPurchaseGroupId, Long memberId);
 
     List<GroupPurchaseParticipant> findByMember_MemberIdAndGroupPurchase_ProgressStatus(

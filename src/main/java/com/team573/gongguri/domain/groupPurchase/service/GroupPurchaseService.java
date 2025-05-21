@@ -53,11 +53,6 @@ public class GroupPurchaseService {
         return groupPurchase;
     }
 
-    private int getCurrentParticipantsCount(Long id) {
-        int currentParticipants = participantRepository.countByGroupPurchase_GroupId(id);
-        return currentParticipants;
-    }
-
     private void registerParticipant(GroupPurchase groupPurchase, Member member) {
         try {
             GroupPurchaseParticipant participant = GroupPurchaseParticipantMapper.toEntity(groupPurchase, member);
