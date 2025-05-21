@@ -2,10 +2,8 @@ package com.team573.gongguri.domain.groupPurchase.dto;
 
 import lombok.Builder;
 
-import java.time.LocalDateTime;
-
 @Builder
-public record GroupPurchaseResponseDto(
+public record GroupPurchaseDetailResponseDto(
         Long id,
         String title,
         String content,
@@ -18,5 +16,6 @@ public record GroupPurchaseResponseDto(
         String imageUrl,
         Boolean isParticipated,
         String writerEmail,
-        String writerNickname
-) {}
+        String writerNickname,
+        Long writerId
+) { }

@@ -31,15 +31,20 @@ public enum CustomErrorCode {
     PARTICIPANT_LIMIT_REACHED(BAD_REQUEST, "PARTICIPANT-003", "모집 인원이 모두 찼습니다."),
     NOT_FOUND_PARTICIPANT(NOT_FOUND, "PARTICIPANT-004", "존재하지 않는 공동 구매 참가자입니다."),
     CANNOT_CANCEL_PAID_PARTICIPANT(FORBIDDEN, "PARTICIPANT-005", "이미 입금한 사용자는 강퇴할 수 없습니다."),
+    IS_NOT_COMPLETED(BAD_REQUEST, "PARTICIPANT-006", "완료된 공동 구매가 아닙니다."),
 
     // COMMON
     INVALID_REQUEST(BAD_REQUEST, "COMMON-001", "잘못된 요청입니다."),
 
     // AUTH
     FAILED_AUTHENTICATION(UNAUTHORIZED, "AUTH-01", "사용자 인증에 실패했습니다."),
+    LOGIN_FAILED(UNAUTHORIZED, "AUTH-02", "아이디 또는 비밀번호가 올바르지 않습니다."),
 
     // MEMBER
     NOT_FOUND_MEMBER(NOT_FOUND, "MEMBER-001", "존재하지 않는 회원입니다."),
+    EMAIL_ALREADY_EXISTS(CONFLICT, "MEMBER-002", "이미 사용 중인 이메일입니다."),
+    NICKNAME_ALREADY_EXISTS(CONFLICT, "MEMBER-003", "이미 사용 중인 닉네임입니다."),
+    EMAIL_NOT_VERIFIED(BAD_REQUEST, "MEMBER-004", "이메일 인증이 완료되지 않았습니다."),
 
     // CHAT
     NOT_FOUND_CHATROOM(NOT_FOUND, "CHAT-001", "존재하지 않는 채팅방입니다."),
@@ -47,8 +52,11 @@ public enum CustomErrorCode {
     CREATE_FAILED_CHATROOM(CONFLICT, "CHAT-003", " 생성에 실패했습니다."),
 
     //UNIV
-    NOT_FOUND_UNIV(NOT_FOUND, "UNIV-001", "해당 대학교 정보가 존재하지 않습니다.");
+    NOT_FOUND_UNIV(NOT_FOUND, "UNIV-001", "해당 대학교 정보가 존재하지 않습니다."),
 
+    //IMAGE_UPLOAD
+    INVALID_IMAGE_FILE(BAD_REQUEST, "IMAGE-001", "잘못된 이미지 파일입니다."),
+    IMAGE_UPLOAD_FAILED(CONFLICT, "IMAGE-002", "이미지 업로드에 실패했습니다.");
 
     private final ErrorStatus errorStatus;
     private final String code;
