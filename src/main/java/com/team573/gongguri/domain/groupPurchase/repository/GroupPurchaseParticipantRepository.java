@@ -38,6 +38,25 @@ public interface GroupPurchaseParticipantRepository extends JpaRepository<GroupP
         Pageable pageable
     );
 
+    @Query("""
+    SELECT gpp
+    FROM GroupPurchaseParticipant gpp
+    JOIN FETCH gpp.groupPurchase gp
+    JOIN FETCH gp.chatRoom cr
+    WHERE gpp.member.memberId = :memberId
+      AND gpp.participationStatus = 'JOINED'
+      AND (:cursorId IS NULL OR gpp.groupParticipantId < :cursorId)
+      AND gp.progressStatus IN :statuses
+      AND gp.isDeleted = false
+    ORDER BY gpp.groupParticipantId DESC
+""")
+    List<GroupPurchaseParticipant> findByMemberWithCursor(
+        Long cursorId,
+        Long memberId,
+        List<ProgressStatus> statuses,
+        Pageable pageable
+    );
+
     Long countByGroupPurchaseAndParticipationStatus(
         GroupPurchase groupPurchase,
         ParticipationStatus participationStatus

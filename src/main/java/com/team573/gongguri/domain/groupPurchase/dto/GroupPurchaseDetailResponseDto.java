@@ -9,7 +9,7 @@ public record GroupPurchaseDetailResponseDto(
         String content,
         int price,
         int maxParticipants,
-        int currentParticipants,
+        Long currentParticipants,
         String bank,
         String account,
         String progressStatus,

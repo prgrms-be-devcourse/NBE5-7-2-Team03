@@ -8,7 +8,7 @@ public record GroupPurchaseListResponseDto (
         String title,
         int price,
         int maxParticipants,
-        int currentParticipants,
+        Long currentParticipants,
         String progressStatus,
         String imageUrl
 ) {}

@@ -4,7 +4,6 @@ import com.team573.gongguri.domain.groupPurchase.entity.GroupPurchase;
 import com.team573.gongguri.domain.groupPurchase.entity.ProgressStatus;
 import java.util.List;
 import java.util.Optional;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -23,24 +22,4 @@ public interface GroupPurchaseRepository extends JpaRepository<GroupPurchase, Lo
     List<GroupPurchase> findAllActive();
 
     Boolean existsByGroupIdAndMember_MemberId(Long groupId, Long memberId);
-
-    @Query("""
-        SELECT gp
-        FROM GroupPurchase gp
-        JOIN FETCH gp.chatRoom cr
-        JOIN GroupPurchaseParticipant gpp 
-            ON gpp.groupPurchase.groupId = gp.groupId
-            AND gpp.member.memberId = :memberId
-            AND gpp.participationStatus = 'JOINED'
-        WHERE (:cursorId IS NULL OR gp.groupId < :cursorId)
-        AND (gp.progressStatus IN :statuses)
-        AND (gp.isDeleted = false)
-        ORDER BY gpp.groupParticipantId DESC
-    """)
-    List<GroupPurchase> findWithCursorAndParticipantCount(
-        Long cursorId,
-        Long memberId,
-        List<ProgressStatus> statuses,
-        Pageable pageable
-    );
 }
