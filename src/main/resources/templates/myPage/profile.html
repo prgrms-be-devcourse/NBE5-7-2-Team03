@@ -16,30 +16,33 @@
         <div th:replace="~{fragments/topbar :: topBar('마이페이지')}"></div>
 
         <main class="container">
-
-            <section class="profile-area">
-                <div class="profile-box">
-                    <img class="profile-picture" src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="프로필 이미지">
-                    <span class="profile-nickname" th:text="${nickname}">닉네임</span>
-                    <div class="like-info">
-                        <span class="like-count">👍🏻 좋아요: <span th:text="${likeCount}">0</span></span>
-                        <span class="dislike-count">👎🏻 싫어요: <span th:text="${dislikeCount}">0</span></span>
+            <div class="profile-header-fixed">
+                <section class="profile-area">
+                    <div class="profile-box">
+                        <img class="profile-picture" src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="프로필 이미지">
+                        <span class="profile-nickname" th:text="${nickname}">닉네임</span>
+                        <div class="like-info">
+                            <span class="like-count">👍🏻 좋아요: <span th:text="${likeCount}">0</span></span>
+                            <span class="dislike-count">👎🏻 싫어요: <span th:text="${dislikeCount}">0</span></span>
+                        </div>
                     </div>
+                </section>
+
+                <h3 class="section-title">내 게시물</h3>
+
+                <div class="status-filter">
+                    <a th:href="@{/my-page/profile(status='ALL')}"
+                       th:class="${status} == 'ALL' ? 'filter-btn selected' : 'filter-btn'">전체</a>
+
+                    <a th:href="@{/my-page/profile(status='ONGOING')}"
+                       th:class="${status} == 'ONGOING' ? 'filter-btn selected' : 'filter-btn'">진행중</a>
+
+                    <a th:href="@{/my-page/profile(status='COMPLETED')}"
+                       th:class="${status} == 'COMPLETED' ? 'filter-btn selected' : 'filter-btn'">완료</a>
                 </div>
-            </section>
-
-            <h3 class="section-title">내 게시물</h3>
-
-            <div class="status-filter">
-                <a th:href="@{/my-page/profile(status='ALL')}"
-                   th:class="${status} == 'ALL' ? 'filter-btn selected' : 'filter-btn'">전체</a>
-
-                <a th:href="@{/my-page/profile(status='ONGOING')}"
-                   th:class="${status} == 'ONGOING' ? 'filter-btn selected' : 'filter-btn'">진행중</a>
-
-                <a th:href="@{/my-page/profile(status='COMPLETED')}"
-                   th:class="${status} == 'COMPLETED' ? 'filter-btn selected' : 'filter-btn'">완료</a>
             </div>
+
+
 
             <div class="purchase-list">
                 <a th:each="item : ${createdList}"
