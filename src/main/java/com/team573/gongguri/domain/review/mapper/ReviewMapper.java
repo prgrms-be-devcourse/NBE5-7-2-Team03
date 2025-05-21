@@ -1,6 +1,6 @@
 package com.team573.gongguri.domain.review.mapper;
 
-import com.team573.gongguri.domain.groupPurchase.entity.GroupPurchase;
+import com.team573.gongguri.domain.grouppurchase.entity.GroupPurchase;
 import com.team573.gongguri.domain.member.entity.Member;
 import com.team573.gongguri.domain.review.entity.Review;
 import lombok.AccessLevel;

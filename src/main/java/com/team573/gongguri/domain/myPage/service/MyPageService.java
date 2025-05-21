@@ -1,13 +1,13 @@
 package com.team573.gongguri.domain.myPage.service;
 
 
-import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseWithReviewedResponseDto;
-import com.team573.gongguri.domain.groupPurchase.entity.GroupPurchase;
-import com.team573.gongguri.domain.groupPurchase.entity.GroupPurchaseParticipant;
-import com.team573.gongguri.domain.groupPurchase.entity.ParticipationStatus;
-import com.team573.gongguri.domain.groupPurchase.entity.ProgressStatus;
-import com.team573.gongguri.domain.groupPurchase.mapper.GroupPurchaseMapper;
-import com.team573.gongguri.domain.groupPurchase.repository.GroupPurchaseParticipantRepository;
+import com.team573.gongguri.domain.grouppurchase.dto.GroupPurchaseWithReviewedResponseDto;
+import com.team573.gongguri.domain.grouppurchase.entity.GroupPurchase;
+import com.team573.gongguri.domain.grouppurchase.entity.GroupPurchaseParticipant;
+import com.team573.gongguri.domain.grouppurchase.entity.ParticipationStatus;
+import com.team573.gongguri.domain.grouppurchase.entity.ProgressStatus;
+import com.team573.gongguri.domain.grouppurchase.mapper.GroupPurchaseMapper;
+import com.team573.gongguri.domain.grouppurchase.repository.GroupPurchaseParticipantRepository;
 import com.team573.gongguri.domain.review.repository.ReviewRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

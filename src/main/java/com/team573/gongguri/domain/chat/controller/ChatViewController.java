@@ -1,8 +1,8 @@
 package com.team573.gongguri.domain.chat.controller;
 
 import com.team573.gongguri.domain.chat.service.ChatService;
-import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseSimpleResponseDto;
-import com.team573.gongguri.domain.groupPurchase.service.GroupPurchaseService;
+import com.team573.gongguri.domain.grouppurchase.dto.GroupPurchaseSimpleResponseDto;
+import com.team573.gongguri.domain.grouppurchase.service.GroupPurchaseService;
 import com.team573.gongguri.global.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
