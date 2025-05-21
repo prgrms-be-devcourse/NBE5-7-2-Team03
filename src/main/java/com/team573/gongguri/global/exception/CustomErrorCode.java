@@ -26,6 +26,7 @@ public enum CustomErrorCode {
     UNAUTHORIZED_GROUP_PURCHASE_MANAGE(FORBIDDEN, "POST-006", "해당 공동구매에 대한 관리 권한이 없습니다."),
     FAILED_GROUP_PURCHASE_LIST(CONFLICT, "POST-007", "공동구매 게시글 목록 불러오기게 실패했습니다."),
     ALREADY_DELETE_GROUP_PURCHASE(CONFLICT, "POST-008" , "이미 삭제된 공동구매 게시글입니다."),
+    DELETE_FAILED_WITH_DEPOSITED_PARTICIPANTS(CONFLICT, "POST-009", "입금 확인된 참여자가 있어 공동구매 게시글 삭제에 실패했습니다."),
 
     //GROUP_PURCHASE_PARTICIPATE
     ALREADY_JOINED(CONFLICT, "PARTICIPATE-001", "이미 공동구매에 참여하였습니다."),
@@ -59,7 +60,7 @@ public enum CustomErrorCode {
 
     //IMAGE_UPLOAD
     INVALID_IMAGE_FILE(BAD_REQUEST, "IMAGE-001", "잘못된 이미지 파일입니다."),
-    IMAGE_UPLOAD_FAILED(CONFLICT, "IMAGE-002", "이미지 업로드에 실패했습니다.");
+    IMAGE_UPLOAD_FAILED(CONFLICT, "IMAGE-002", "이미지 업로드에 실패했습니다."), ;
 
     private final ErrorStatus errorStatus;
     private final String code;
