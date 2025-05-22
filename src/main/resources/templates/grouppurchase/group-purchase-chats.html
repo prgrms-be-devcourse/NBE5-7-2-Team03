@@ -123,7 +123,7 @@
         list.innerHTML = cards;
 
         // Update the cursor for pagination
-        lastCursorId = data[data.length - 1].id;
+        lastCursorId = data[data.length - 1].participantId;
 
         // 가져온 데이터가 pageSize보다 적으면 더 이상 데이터가 없는 것
         hasMoreData = data.length >= pageSize;
@@ -157,7 +157,7 @@
         list.insertAdjacentHTML('beforeend', newCards);
 
         // Update the cursor for next pagination
-        lastCursorId = data[data.length - 1].id;
+        lastCursorId = data[data.length - 1].participantId;
 
         // 가져온 데이터가 pageSize보다 적으면 더 이상 데이터가 없는 것
         hasMoreData = data.length >= pageSize;

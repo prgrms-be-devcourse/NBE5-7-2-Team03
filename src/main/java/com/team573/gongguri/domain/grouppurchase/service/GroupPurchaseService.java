@@ -21,7 +21,6 @@ import com.team573.gongguri.global.exception.CustomErrorCode;
 import com.team573.gongguri.global.exception.CustomException;
 import java.util.List;
 import java.util.Map;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -45,11 +44,6 @@ public class GroupPurchaseService {
         GroupPurchase groupPurchase = groupPurchaseRepository.findByGroupIdAndDeletedFalse(id)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.NOT_FOUND_GROUP_PURCHASE));
         return groupPurchase;
-    }
-
-    private int getCurrentParticipantsCount(Long id) {
-        int currentParticipants = participantRepository.countByGroupPurchase_GroupId(id);
-        return currentParticipants;
     }
 
     private void registerParticipant(GroupPurchase groupPurchase, Member member) {
@@ -92,7 +86,7 @@ public class GroupPurchaseService {
     public GroupPurchaseDetailResponseDto get(Long id, Long memberId) {
         GroupPurchase groupPurchase = groupPurchaseRepository.findById(id)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.NOT_FOUND_GROUP_PURCHASE));
-        int currentParticipants = getCurrentParticipantsCount(id);
+        Long currentParticipants = participantRepository.countByGroupPurchaseAndParticipationStatus(groupPurchase, ParticipationStatus.JOINED);
         boolean isParticipated = participantRepository.existsByGroupPurchase_GroupIdAndMember_MemberId(id, memberId);
 
         return GroupPurchaseMapper.toDetailDto(groupPurchase, currentParticipants, isParticipated);
@@ -184,27 +178,23 @@ public class GroupPurchaseService {
         PurchaseFilter purchaseFilter,
         Long memberId
     ) {
-        // 필터로 공동 구매 상태 구하기
         List<ProgressStatus> statuses = purchaseFilter.toStatuses();
 
         PageRequest pageable = PageRequest.of(0, size);
 
-        // 공동 구매 조회
-        List<GroupPurchase> groupPurchases;
-        try {
-            groupPurchases = groupPurchaseRepository.findWithCursorAndParticipantCount(cursorId, memberId, statuses, pageable);
-        } catch (Exception e) {
-            log.error("공동구매 목록 조회 실패");
-            throw new CustomException(CustomErrorCode.FAILED_GROUP_PURCHASE_LIST);
-        }
+        List<GroupPurchaseParticipant> groupPurchaseParticipants
+            = groupPurchaseParticipantRepository.findByMemberWithCursor(cursorId, memberId, statuses, pageable);
 
-        // 맵으로 채팅 메시지 가져오기
+        List<GroupPurchase> groupPurchases = groupPurchaseParticipants.stream()
+            .map(GroupPurchaseParticipant::getGroupPurchase)
+            .toList();
+
         Map<Long, String> firstMessages = getFirstMessages(groupPurchases);
 
-        return groupPurchases.stream()
+        return groupPurchaseParticipants.stream()
             .map(groupPurchase -> GroupPurchaseMapper.toDtoWithMessage(
                 groupPurchase,
-                countParticipantsByStatus(groupPurchase, ParticipationStatus.JOINED),
+                countParticipantsByStatus(groupPurchase.getGroupPurchase(), ParticipationStatus.JOINED),
                 firstMessages
                 )
             )
@@ -255,7 +245,7 @@ public class GroupPurchaseService {
 
         return purchases.stream()
                 .map(purchase -> {
-                    int currentParticipants = participantRepository.countByGroupPurchase_GroupId(purchase.getGroupId());
+                    Long currentParticipants = participantRepository.countByGroupPurchaseAndParticipationStatus(purchase, ParticipationStatus.JOINED);
                     return GroupPurchaseMapper.toListDto(purchase, currentParticipants);
 
                 })

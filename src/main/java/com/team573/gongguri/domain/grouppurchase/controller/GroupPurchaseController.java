@@ -6,7 +6,6 @@ import com.team573.gongguri.domain.grouppurchase.entity.PurchaseFilter;
 import com.team573.gongguri.domain.grouppurchase.service.GroupPurchaseParticipantService;
 import com.team573.gongguri.domain.grouppurchase.service.GroupPurchaseService;
 import com.team573.gongguri.global.security.CustomUserDetails;
-import java.util.ArrayList;
 import java.util.List;
 
 import lombok.RequiredArgsConstructor;
