@@ -27,10 +27,24 @@ th { background-color: #f2f2f2; }
 }
 
 .status-filter {
+  /*display: flex;*/
+  /*gap: 0.5rem;*/
+  /*margin-bottom: 1rem;*/
+  /*justify-content: center;*/
   display: flex;
   gap: 0.5rem;
   margin-bottom: 1rem;
   justify-content: center;
+  position: fixed;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: var(--mobile-width);
+  background-color: white;
+  z-index: 999;
+  padding: 0.5rem 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .filter-btn {
@@ -157,4 +171,13 @@ th { background-color: #f2f2f2; }
   background-color: #cccccc;
   color: white;
   cursor: not-allowed;
+}
+
+.container {
+  width: 100%;
+  max-width: var(--mobile-width);
+  margin: 0 auto;
+  padding: 0 1rem;
+  padding-bottom: 70px;
+  padding-top: 120px;
 }

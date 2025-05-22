@@ -12,8 +12,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface GroupPurchaseParticipantRepository extends JpaRepository<GroupPurchaseParticipant, Long> {
 
-    int countByGroupPurchase_GroupId(Long groupId);
-
     boolean existsByGroupPurchase_GroupIdAndMember_MemberId(Long groupPurchaseGroupId, Long memberId);
 
     boolean existsByGroupPurchase_GroupIdAndDepositIsTrue(Long groupId);
@@ -37,6 +35,25 @@ public interface GroupPurchaseParticipantRepository extends JpaRepository<GroupP
         @Param("cursorId") Long cursorParticipantId,
         @Param("deposit") Boolean deposit,
         @Param("memberId") Long memberId,
+        Pageable pageable
+    );
+
+    @Query("""
+    SELECT gpp
+    FROM GroupPurchaseParticipant gpp
+    JOIN FETCH gpp.groupPurchase gp
+    JOIN FETCH gp.chatRoom cr
+    WHERE gpp.member.memberId = :memberId
+      AND gpp.participationStatus = 'JOINED'
+      AND (:cursorId IS NULL OR gpp.groupParticipantId < :cursorId)
+      AND gp.progressStatus IN :statuses
+      AND gp.deleted = false
+    ORDER BY gpp.groupParticipantId DESC
+""")
+    List<GroupPurchaseParticipant> findByMemberWithCursor(
+        Long cursorId,
+        Long memberId,
+        List<ProgressStatus> statuses,
         Pageable pageable
     );
 

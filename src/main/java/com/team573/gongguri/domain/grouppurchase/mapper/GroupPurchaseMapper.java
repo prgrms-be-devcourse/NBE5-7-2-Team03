@@ -4,6 +4,7 @@ import com.team573.gongguri.domain.chat.entity.ChatRoom;
 import com.team573.gongguri.domain.grouppurchase.dto.*;
 import com.team573.gongguri.domain.grouppurchase.entity.GroupPurchase;
 import com.team573.gongguri.domain.grouppurchase.entity.ProgressStatus;
+import com.team573.gongguri.domain.grouppurchase.entity.GroupPurchaseParticipant;
 import com.team573.gongguri.domain.member.entity.Member;
 import com.team573.gongguri.domain.member.entity.Univ;
 import lombok.AccessLevel;
@@ -49,7 +50,7 @@ public class GroupPurchaseMapper {
                 .imageUrl(entity.getImageUrl())
                 .build();
     }
-    public static GroupPurchaseDetailResponseDto toDetailDto(GroupPurchase entity, int currentParticipants, boolean isParticipated) {
+    public static GroupPurchaseDetailResponseDto toDetailDto(GroupPurchase entity, Long currentParticipants, boolean isParticipated) {
         return GroupPurchaseDetailResponseDto.builder()
                 .id(entity.getGroupId())
                 .title(entity.getTitle())
@@ -69,19 +70,20 @@ public class GroupPurchaseMapper {
     }
 
     public static GroupPurchaseWithChatResponseDto toDtoWithMessage(
-        GroupPurchase groupPurchase,
+        GroupPurchaseParticipant groupPurchaseParticipant,
         Long participantCount,
         Map<Long, String> firstMessages
     ) {
         return GroupPurchaseWithChatResponseDto.builder()
-            .id(groupPurchase.getGroupId())
-            .title(groupPurchase.getTitle())
-            .maxParticipants(groupPurchase.getMaxParticipants())
-            .progressStatus(groupPurchase.getProgressStatus().toString())
-            .imageUrl(groupPurchase.getImageUrl())
-            .chatMessage(firstMessages.get(groupPurchase.getChatRoom().getChatRoomId()))
+            .id(groupPurchaseParticipant.getGroupPurchase().getGroupId())
+            .participantId(groupPurchaseParticipant.getGroupParticipantId())
+            .title(groupPurchaseParticipant.getGroupPurchase().getTitle())
+            .maxParticipants(groupPurchaseParticipant.getGroupPurchase().getMaxParticipants())
+            .progressStatus(groupPurchaseParticipant.getGroupPurchase().getProgressStatus().toString())
+            .imageUrl(groupPurchaseParticipant.getGroupPurchase().getImageUrl())
+            .chatMessage(firstMessages.get(groupPurchaseParticipant.getGroupPurchase().getChatRoom().getChatRoomId()))
             .participantCount(participantCount)
-            .createAt(groupPurchase.getCreatedAt())
+            .createAt(groupPurchaseParticipant.getCreatedAt())
             .build();
     }
 
@@ -91,7 +93,7 @@ public class GroupPurchaseMapper {
                 .title(dto.title())
                 .price(dto.price())
                 .maxParticipants(dto.maxParticipants())
-                .currentParticipants(dto.participantCount().intValue())
+                .currentParticipants(dto.participantCount())
                 .progressStatus(dto.progressStatus().toString())
                 .imageUrl(dto.imageUrl())
                 .build();
@@ -108,7 +110,8 @@ public class GroupPurchaseMapper {
             .price(groupPurchase.getPrice())
             .build();
     }
-    public static GroupPurchaseListResponseDto toListDto(GroupPurchase purchase, int currentParticipants) {
+
+    public static GroupPurchaseListResponseDto toListDto(GroupPurchase purchase, Long currentParticipants) {
         return GroupPurchaseListResponseDto.builder()
                 .id(purchase.getGroupId())
                 .title(purchase.getTitle())
@@ -119,7 +122,6 @@ public class GroupPurchaseMapper {
                 .imageUrl(purchase.getImageUrl()) // 없으면 null 처리
                 .build();
     }
-
 
     public static GroupPurchaseWithReviewedResponseDto toDtoWithReviewed(
         GroupPurchase groupPurchase,

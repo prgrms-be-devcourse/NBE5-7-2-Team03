@@ -6,6 +6,7 @@ import lombok.Builder;
 @Builder
 public record GroupPurchaseWithChatResponseDto(
     Long id,
+    Long participantId,
     String title,
     Integer maxParticipants,
     Long participantCount,
