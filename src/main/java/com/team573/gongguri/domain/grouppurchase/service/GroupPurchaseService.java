@@ -139,11 +139,12 @@ public class GroupPurchaseService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(Long id, Long memberId) {
         GroupPurchase groupPurchase = getActiveGroupPurchase(id);
-        if (groupPurchase.isDeleted()) {
-            throw new CustomException(CustomErrorCode.ALREADY_DELETE_GROUP_PURCHASE);
+        if (!groupPurchase.getMember().getMemberId().equals(memberId)) {
+            throw new CustomException(CustomErrorCode.UNAUTHORIZED_GROUP_PURCHASE_MANAGE);
         }
+
         if (!groupPurchase.getProgressStatus().equals(ProgressStatus.COMPLETED)) {
             boolean hasDepositedParticipants = participantRepository
                     .existsByGroupPurchase_GroupIdAndDepositIsTrue(id);
