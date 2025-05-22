@@ -6,12 +6,28 @@ table { border-collapse: collapse; width: 100%; max-width: 800px; margin-top: 10
 th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
 th { background-color: #f2f2f2; }
 
+.fixed-header {
+    position: fixed;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: var(--mobile-width);
+    z-index: 999;
+    background-color: white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    padding: 0.5rem 1rem 0.75rem;
+}
+
+.container {
+    padding-top: 160px;
+}
 
 .top-search-filter {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: 1rem 0;
+    margin: 0.3rem 0;
     position: relative;
 }
 
@@ -25,7 +41,7 @@ th { background-color: #f2f2f2; }
 .status-filter {
     display: flex;
     gap: 0.5rem;
-    margin-bottom: 1rem;
+    margin-bottom: 0rem;
     justify-content: center;
 }
 
@@ -121,7 +137,7 @@ th { background-color: #f2f2f2; }
 .price-area {
     display: flex;
     align-items: center;
-    gap: 2.5rem; /* 👉 뱃지 ↔ 가격 간 넉넉한 간격 */
+    gap: 2.5rem;
 }
 
 .price {
@@ -140,10 +156,9 @@ th { background-color: #f2f2f2; }
 
 
 
-/* 금액 부분 */
+
 .price {
     margin-left: auto;
-    font-weight: 500; /* 기존 bold(700)보다 샤프하게 */
     font-size: 0.95rem;
     color: #111;
 }
@@ -165,7 +180,7 @@ th { background-color: #f2f2f2; }
 
 .add-btn {
     position: fixed;
-    right: calc((100vw - 390px) / 2); /* 모바일 우측 기준 */
+    right: calc((100vw - 390px) / 2);
     bottom: 80px;
     width: 48px;
     height: 48px;

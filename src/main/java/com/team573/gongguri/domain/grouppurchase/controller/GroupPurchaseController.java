@@ -64,8 +64,12 @@ public class GroupPurchaseController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        groupPurchaseService.delete(id);
+    public ResponseEntity<Void> delete(
+            @PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        Long memberId = userDetails.getMemberId();
+        groupPurchaseService.delete(id, memberId);
         return ResponseEntity.noContent().build();
     }
 

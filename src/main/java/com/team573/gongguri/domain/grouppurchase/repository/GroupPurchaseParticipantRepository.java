@@ -14,6 +14,8 @@ public interface GroupPurchaseParticipantRepository extends JpaRepository<GroupP
 
     boolean existsByGroupPurchase_GroupIdAndMember_MemberId(Long groupPurchaseGroupId, Long memberId);
 
+    boolean existsByGroupPurchase_GroupIdAndDepositIsTrue(Long groupId);
+
     List<GroupPurchaseParticipant> findByMember_MemberIdAndGroupPurchase_ProgressStatus(
         Long memberId, ProgressStatus progressStatus);
 
