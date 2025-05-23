@@ -1,4 +1,4 @@
-/* Base styles */
+
 :root {
   --background: #ffffff;
   --foreground: #0f172a;
@@ -43,7 +43,6 @@ body {
   align-items: center;
 }
 
-/* Mobile container */
 .mobile-container {
   width: 100%;
   max-width: var(--mobile-width);
@@ -59,11 +58,10 @@ body {
   max-width: var(--mobile-width);
   margin: 0 auto;
   padding: 0 1rem;
-  padding-bottom: 70px; /* Space for bottom navigation */
-  padding-top: 60px; /* Space for top bar */
+  padding-bottom: 70px;
+  padding-top: 60px;
 }
 
-/* Top bar */
 .top-bar {
   position: fixed;
   top: 0;
@@ -105,7 +103,6 @@ h1 {
   font-weight: 600;
 }
 
-/* Bottom Navigation */
 .bottom-nav {
   position: fixed;
   bottom: 0;
@@ -150,7 +147,6 @@ h1 {
   color: var(--primary);
 }
 
-/* Connection banner */
 .connection-banner {
   margin: 0.5rem 0 1rem;
   padding: 0.75rem 1rem;
@@ -174,11 +170,10 @@ h1 {
   pointer-events: none;
 }
 
-/* Chat container */
 .chat-container {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 70px);
+  height: 80vh;
   width: 100%;
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -193,13 +188,13 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  width: 100%; /* 명시적으로 너비 설정 */
+  width: 100%;
 }
 
 .message {
   display: flex;
   max-width: 80%;
-  width: 80%; /* chat-container 너비의 80% */
+  width: 80%;
 }
 
 .message.received {
@@ -207,8 +202,8 @@ h1 {
 }
 
 .message.sent {
-  align-self: flex-end; /* 보낸 메시지는 오른쪽 정렬 */
-  justify-content: flex-end; /* 내부 콘텐츠도 오른쪽 정렬 */
+  align-self: flex-end;
+  justify-content: flex-end;
 }
 
 .message.system {
@@ -221,9 +216,9 @@ h1 {
   border-radius: var(--radius);
   position: relative;
   max-width: 100%;
-  word-wrap: break-word; /* 긴 단어 줄바꿈 */
-  overflow-wrap: break-word; /* 최신 브라우저 지원 */
-  white-space: pre-wrap; /* 공백과 줄바꿈 보존하면서 자동 줄바꿈 */
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
 }
 
 .message.received .message-content {
@@ -300,4 +295,103 @@ h1 {
 .send-button svg {
   width: 20px;
   height: 20px;
+}
+
+.purchase-card {
+  display: flex;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 8px 0;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.purchase-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  background-color: #f9f9f9;
+}
+
+.purchase-card img {
+  width: 110px;
+  height: 90px;
+  object-fit: cover;
+  flex-shrink: 0;
+  margin-left: 3px;
+}
+
+.purchase-info {
+  flex: 1;
+  padding: 0.5rem 0.7rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.purchase-title {
+  font-weight: 600;
+  font-size: 1rem;
+  margin-bottom: 0.3rem;
+  margin-left: 0.4rem;
+}
+
+.purchase-message {
+  font-size: 0.85rem;
+  color: #555;
+  margin-left: 0.4rem;
+}
+
+.purchase-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.purchase-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  margin-left: 0.4rem;
+  margin-top: auto;
+}
+
+.status-badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 1rem;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.status-open {
+  background-color: #e0f7e9;
+  color: #2e7d32;
+}
+
+.status-closed {
+  background-color: #eeeeee;
+  color: #666666;
+}
+
+.status-done {
+  background-color: #e3eafc;
+  color: #1a237e;
+}
+
+.participant-count {
+  cursor: pointer;
+  transition: color 0.2s;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+.participant-count:hover {
+  background-color: rgba(97, 155, 255, 0.1);
+  color: #619bff;
 }

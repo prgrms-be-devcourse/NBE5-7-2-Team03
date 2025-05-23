@@ -6,12 +6,28 @@ table { border-collapse: collapse; width: 100%; max-width: 800px; margin-top: 10
 th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
 th { background-color: #f2f2f2; }
 
+.fixed-header {
+    position: fixed;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: var(--mobile-width);
+    z-index: 999;
+    background-color: white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    padding: 0.5rem 1rem 0.75rem;
+}
+
+.container {
+    padding-top: 160px;
+}
 
 .top-search-filter {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: 1rem 0;
+    margin: 0.3rem 0;
     position: relative;
 }
 
@@ -25,7 +41,7 @@ th { background-color: #f2f2f2; }
 .status-filter {
     display: flex;
     gap: 0.5rem;
-    margin-bottom: 1rem;
+    margin-bottom: 0rem;
     justify-content: center;
 }
 
@@ -99,31 +115,72 @@ th { background-color: #f2f2f2; }
 
 .purchase-footer {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
     font-size: 0.9rem;
     margin-left: 0.4rem;
     margin-top: auto;
+    padding-right: 0.7rem;
+    font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
+}
+
+.participant {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+}
+
+.participant-count {
+    font-weight: bold;
+}
+
+.price-area {
+    display: flex;
+    align-items: center;
+    gap: 2.5rem;
+}
+
+.price {
+    font-weight: 800;
+    font-size: 0.95rem;
+    color: #111;
 }
 
 .status-badge {
-    padding: 0.2rem 0.6rem;
-    border-radius: 10px;
     font-size: 0.75rem;
-    color: white;
+    padding: 0.25rem 0.6rem;
+    border-radius: 1rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+
+
+
+.price {
+    margin-left: auto;
+    font-size: 0.95rem;
+    color: #111;
 }
 
 .status-open {
-    background-color: #619bff;
+    background-color: #e0f7e9;
+    color: #2e7d32;
+}
+
+.status-closed {
+    background-color: #eeeeee;
+    color: #666666;
 }
 
 .status-done {
-    background-color: #aaa;
+    background-color: #e3eafc;
+    color: #1a237e;
 }
 
 .add-btn {
     position: fixed;
-    right: calc((100vw - 390px) / 2); /* 모바일 우측 기준 */
+    right: calc((100vw - 390px) / 2);
     bottom: 80px;
     width: 48px;
     height: 48px;

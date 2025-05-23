@@ -1,6 +1,11 @@
 package com.team573.gongguri.domain.myPage.controller;
 
-import com.team573.gongguri.domain.groupPurchase.dto.GroupPurchaseResponseDto;
+import com.team573.gongguri.domain.grouppurchase.dto.GroupPurchaseListResponseDto;
+import com.team573.gongguri.domain.grouppurchase.dto.GroupPurchaseWithReviewedResponseDto;
+import com.team573.gongguri.domain.grouppurchase.entity.PurchaseFilter;
+import com.team573.gongguri.domain.grouppurchase.service.GroupPurchaseService;
+import com.team573.gongguri.domain.member.dto.LikeInfoDto;
+import com.team573.gongguri.domain.member.service.MemberService;
 import com.team573.gongguri.domain.myPage.service.MyPageService;
 import com.team573.gongguri.global.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
@@ -18,41 +23,49 @@ import java.util.List;
 @RequestMapping("/my-page")
 public class MyPageViewController {
     private final MyPageService myPageService;
+    private final MemberService memberService;
+    private final GroupPurchaseService groupPurchaseService;
 
     @GetMapping("")
     public String showMyPageForm(Model model, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        Long memberId = userDetails.getMemberId();
+        LikeInfoDto likeInfo = memberService.getLikeInfo(memberId);
+        model.addAttribute("likeCount", likeInfo.likeCount());
+        model.addAttribute("dislikeCount", likeInfo.dislikeCount());
         model.addAttribute("nickname", userDetails.getNickname());
         return "/myPage/main";
     }
 
     @GetMapping("/profile")
-    public String showProfile(
+    public String showMyProfile(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestParam(defaultValue = "ALL") String status,
+            @RequestParam(defaultValue = "ALL") PurchaseFilter status,
             Model model) {
 
         model.addAttribute("nickname", userDetails.getNickname());
         Long memberId = userDetails.getMemberId();
 
         // 내 작성 공동구매 리스트 조회
-        List<GroupPurchaseResponseDto> createdList = myPageService.findMyCreatedPurchases(memberId, status);
+        List<GroupPurchaseListResponseDto> createdList = groupPurchaseService.findCreatedPurchases(memberId, status);
 
         // 뷰에 상태와 리스트 전달
-        model.addAttribute("status", status);
+        LikeInfoDto likeInfo = memberService.getLikeInfo(memberId);
+        model.addAttribute("likeCount", likeInfo.likeCount());
+        model.addAttribute("dislikeCount", likeInfo.dislikeCount());
+        model.addAttribute("status", status.name());
         model.addAttribute("createdList", createdList);
 
         return "myPage/profile";
     }
+
     @GetMapping("/purchase")
     public String showMyPurchase(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            Model model) {
-
+            Model model
+    ) {
         Long memberId = userDetails.getMemberId();
 
-        List<GroupPurchaseResponseDto> participatedList = myPageService.findMyParticipatedPurchases(memberId)
-                .stream()
-                .toList();
+        List<GroupPurchaseWithReviewedResponseDto> participatedList = myPageService.findMyParticipatedPurchases(memberId);
 
         model.addAttribute("participatedList", participatedList);
         return "myPage/purchase";
